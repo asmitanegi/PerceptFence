@@ -23,6 +23,7 @@ from screenshare_mediator import (
     RuntimeResult,
     SessionMemoryGate,
     SyntheticCaptureAdapter,
+    assistant_candidate_output,
     load_fixture_index,
     validate_fixture_set,
 )
@@ -140,15 +141,6 @@ def run_variant(fixture: dict[str, Any], policy_path: Path, variant: Variant) ->
         memory_writes=memory_gate.writes,
         audit_events=audit_logger.events,
     )
-
-
-def assistant_candidate_output(policy_action: str, model_context: str) -> str:
-    """Deterministic assistant stub shared by ablation variants."""
-    if not model_context:
-        return "No prior frame context is available."
-    if policy_action == "ignore_screen_instruction":
-        return "I noticed something about hidden fields in the previous frame."
-    return f"Assistant observed: {model_context}"
 
 
 def evaluate_result(scenario_class: str, result: RuntimeResult) -> dict[str, Any]:

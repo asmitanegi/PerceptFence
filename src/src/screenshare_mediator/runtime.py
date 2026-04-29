@@ -14,6 +14,20 @@ from .policy import ConsentPolicyEngine
 from .redaction import RedactionEngine
 
 
+def assistant_candidate_output(policy_action: str, model_context: str) -> str:
+    """Deterministic assistant stub shared by smoke path and ablation runner.
+
+    The stub is intentionally trivial so that the output-guard's filters
+    (literal-fragment denylist + indirect-disclosure regex) are the only
+    behavior under test, not the assistant's choice of words.
+    """
+    if not model_context:
+        return "No prior frame context is available."
+    if policy_action == "ignore_screen_instruction":
+        return "I noticed something about hidden fields in the previous frame."
+    return f"Assistant observed: {model_context}"
+
+
 class RuntimeMediator:
     """Run one fixture through baseline and guarded paths."""
 
@@ -49,7 +63,7 @@ class RuntimeMediator:
         if memory_gate.exclusions:
             audit_logger.record_context_exclusion(decision)
 
-        draft_output = self._assistant_candidate_output(decision.action, mediated.model_context)
+        draft_output = assistant_candidate_output(decision.action, mediated.model_context)
         guard_context = self.output_guard.context_from_policy(decision)
         guard_decision = self.output_guard.guard(draft_output, guard_context)
         audit_logger.record_output_guard(guard_decision)
@@ -62,12 +76,3 @@ class RuntimeMediator:
             memory_writes=memory_gate.writes,
             audit_events=audit_logger.events,
         )
-
-    @staticmethod
-    def _assistant_candidate_output(policy_action: str, model_context: str) -> str:
-        """Tiny deterministic assistant stub used by the smoke path."""
-        if not model_context:
-            return "No prior frame context is available."
-        if policy_action == "ignore_screen_instruction":
-            return "I noticed something about hidden fields in the previous frame."
-        return f"Guarded action={policy_action}; context={model_context}"

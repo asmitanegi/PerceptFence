@@ -8,7 +8,7 @@ from .models import CapturedSession, MediatedSession, OutputGuardContext, Output
 from .output_guard import OutputGuard
 from .policy import ConsentPolicyEngine
 from .redaction import RedactionEngine
-from .runtime import RuntimeMediator
+from .runtime import RuntimeMediator, assistant_candidate_output
 
 __all__ = [
     "AuditLogger",
@@ -25,6 +25,7 @@ __all__ = [
     "RuntimeResult",
     "SessionMemoryGate",
     "SyntheticCaptureAdapter",
+    "assistant_candidate_output",
     "load_fixture_index",
     "validate_fixture_set",
 ]
