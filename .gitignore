@@ -8,5 +8,4 @@ paper/authors.private.md
 
 # Paper-enhancer phase outputs are tracked scaffold artifacts for NEE-1254.
 # Keep arbitrary local scratch out, but allow the committed phase markdown files.
-paper/skill-output/*
-!paper/skill-output/phase-*.md
+paper/*
