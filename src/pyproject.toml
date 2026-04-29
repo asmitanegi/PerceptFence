@@ -1,0 +1,10 @@
+[project]
+name = "consent-runtime-scaffold"
+version = "0.1.0"
+description = "Anonymous synthetic scaffold for consent-aware screen-share assistant runtime evaluation."
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

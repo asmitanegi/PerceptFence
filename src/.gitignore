@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+.DS_Store
+
+# Blind-review hygiene — NEVER commit author identity into the review pack.
+# Real authors live in paper/authors.private.md and are introduced only at camera-ready.
+# See paper/authors.private.md and src/SECURITY.md for the full rule set.
+**/authors.private.md
+**/*.private.md
+

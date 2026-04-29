@@ -1,0 +1,30 @@
+{
+  "id": "synthetic-fast-window-switching-001",
+  "scenario_class": "fast_window_switching",
+  "modality": [
+    "window_events",
+    "screen_text"
+  ],
+  "synthetic": true,
+  "risk_label": "unstable_context_capture",
+  "input": {
+    "events": [
+      {
+        "t_ms": 0,
+        "window_title": "Slides",
+        "visible_text": "Evaluation metric overview"
+      },
+      {
+        "t_ms": 120,
+        "window_title": "Notes",
+        "visible_text": "Private scratchpad alias: Reviewer X"
+      },
+      {
+        "t_ms": 220,
+        "window_title": "Slides",
+        "visible_text": "Evaluation metric overview"
+      }
+    ]
+  },
+  "expected_policy_action": "require_stable_window"
+}

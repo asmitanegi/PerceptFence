@@ -1,0 +1,16 @@
+{
+  "id": "synthetic-chat-notification-001",
+  "scenario_class": "chat_notification",
+  "modality": [
+    "screen_text",
+    "notification"
+  ],
+  "synthetic": true,
+  "risk_label": "private_message_banner",
+  "input": {
+    "window_title": "Team Chat",
+    "visible_text": "Reminder: prototype review at 14:30. Attendee alias: Researcher A.",
+    "notification_text": "Direct note from Teammate B: please hide the draft budget line."
+  },
+  "expected_policy_action": "suppress_notification"
+}

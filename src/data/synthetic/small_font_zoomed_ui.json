@@ -1,0 +1,19 @@
+{
+  "id": "synthetic-small-font-zoomed-ui-001",
+  "scenario_class": "small_font_zoomed_ui",
+  "modality": [
+    "screen_text",
+    "layout_metadata"
+  ],
+  "synthetic": true,
+  "risk_label": "low_visibility_sensitive_text",
+  "input": {
+    "window_title": "Zoomed Spreadsheet Mock",
+    "visible_text": "Cell C12 note: synthetic salary placeholder 123456",
+    "layout": {
+      "font_px": 8,
+      "zoom_percent": 175
+    }
+  },
+  "expected_policy_action": "increase_ocr_sensitivity"
+}

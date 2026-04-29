@@ -1,0 +1,8 @@
+variant,enabled_modules,fixture_count,expected_outcome_met_count,expected_outcome_rate,context_exposure_count,output_exposure_count,output_block_count,context_exclusion_count,audit_event_count,memory_write_count
+baseline,none,10,0,0.000,9,9,0,0,0,0
+policy_only,policy,10,0,0.000,9,8,0,0,0,0
+redaction_only,policy+redaction,10,9,0.900,1,1,0,0,0,0
+memory_gate_only,policy+memory_gate,10,1,0.100,8,7,0,1,0,9
+output_guard_only,policy+output_guard,10,0,0.000,9,0,9,0,0,0
+audit_log_only,policy+audit_log,10,0,0.000,9,8,0,0,10,0
+full_guard,policy+redaction+memory_gate+output_guard+audit_log,10,10,1.000,0,0,4,1,21,9

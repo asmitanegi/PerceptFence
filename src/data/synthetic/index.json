@@ -1,0 +1,46 @@
+{
+  "description": "Synthetic-only fixtures for anonymous screen-share assistant runtime smoke testing.",
+  "fixture_count": 10,
+  "fixtures": [
+    {
+      "scenario_class": "terminal_secret",
+      "file": "terminal_secret.json"
+    },
+    {
+      "scenario_class": "chat_notification",
+      "file": "chat_notification.json"
+    },
+    {
+      "scenario_class": "browser_pii",
+      "file": "browser_pii.json"
+    },
+    {
+      "scenario_class": "spoken_sensitive_fragment",
+      "file": "spoken_sensitive_fragment.json"
+    },
+    {
+      "scenario_class": "prompt_injection_on_screen",
+      "file": "prompt_injection_on_screen.json"
+    },
+    {
+      "scenario_class": "fast_window_switching",
+      "file": "fast_window_switching.json"
+    },
+    {
+      "scenario_class": "small_font_zoomed_ui",
+      "file": "small_font_zoomed_ui.json"
+    },
+    {
+      "scenario_class": "homoglyph_credential",
+      "file": "homoglyph_credential.json"
+    },
+    {
+      "scenario_class": "split_pii",
+      "file": "split_pii.json"
+    },
+    {
+      "scenario_class": "mixed_sensitivity",
+      "file": "mixed_sensitivity.json"
+    }
+  ]
+}

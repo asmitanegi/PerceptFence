@@ -1,0 +1,168 @@
+\documentclass[manuscript,review,anonymous]{acmart}
+% PerceptFence anonymous review manuscript skeleton.
+% IUI 2027 CFP re-checked 2026-04-26:
+% https://iui.acm.org/2027/call-for-papers/
+% Keep author names, affiliations, acknowledgements, organization names,
+% public repository links, and non-synthetic data out of this file until
+% the camera-ready swap described in paper/authors.private.md.
+
+\setcopyright{none}
+\settopmatter{printacmref=false}
+\renewcommand\footnotetextcopyrightpermission[1]{}
+
+\acmConference[IUI '27]{The Annual ACM Conference on Intelligent User Interfaces}{February 8--11, 2027}{Helsinki, Finland}
+\acmYear{2027}
+\copyrightyear{2027}
+\acmDOI{}
+\acmISBN{}
+\acmSubmissionID{anonymous-review-draft}
+
+\title[Consent-Aware Runtime Mediation for Screen-Share AI]{Consent-Aware Runtime Mediation for Privacy in Real-Time Screen-Share AI Assistants}
+
+\author{Anonymous Author(s)}
+\affiliation{%
+  \institution{Anonymous Institution(s)}
+  \country{Anonymous Country}}
+\email{anonymous@example.invalid}
+
+\begin{abstract}
+Live screen-share AI assistants can observe raw screen and speech streams, but users lack fine-grained runtime control over what the assistant may see, retain, and say.
+Existing chatbot and privacy controls do not address this control gap because the assistant must use fast-changing interface context without exposing, remembering, or repeating information outside current user consent.
+We study a runtime mediation layer that enforces consent, redaction, memory controls, and output safeguards for live multimodal assistance between capture adapters, session memory, and assistant responses.
+We will evaluate the layer on synthetic screen-share scenarios covering secrets, personal data, sensitive speech fragments, prompt-injection text, dense interfaces, zoom changes, and fast window switching, measuring sensitive exposure, false blocks, latency overhead, and task completion against an unmediated prototype baseline.
+The planned contribution is a bounded design and evaluation of runtime control mechanisms for screen-share assistants, with claims limited to synthetic evidence until benchmark results are available.
+\end{abstract}
+
+\begin{CCSXML}
+<ccs2012>
+   <concept>
+       <concept_id>10003120.10003121.10003124.10010866</concept_id>
+       <concept_desc>Human-centered computing~User interface design</concept_desc>
+       <concept_significance>500</concept_significance>
+   </concept>
+   <concept>
+       <concept_id>10003120.10003121.10011748</concept_id>
+       <concept_desc>Human-centered computing~Empirical studies in HCI</concept_desc>
+       <concept_significance>300</concept_significance>
+   </concept>
+   <concept>
+       <concept_id>10002978.10003022.10003465</concept_id>
+       <concept_desc>Security and privacy~Human and societal aspects of security and privacy</concept_desc>
+       <concept_significance>300</concept_significance>
+   </concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Human-centered computing~User interface design}
+\ccsdesc[300]{Human-centered computing~Empirical studies in HCI}
+\ccsdesc[300]{Security and privacy~Human and societal aspects of security and privacy}
+
+\keywords{screen-share assistants, multimodal AI, runtime mediation, consent controls, redaction, session memory}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+% TODO(the section-scope task): Insert the blinded section scope paragraph. State the
+% user-control gap using the frozen thesis and motivate why real-time screen and
+% speech streams require runtime mediation instead of static chatbot settings.
+% Do not claim achieved reductions until eval/results/ contains benchmark outputs.
+
+\section{Problem and Threat Model}
+\input{threat-model}
+
+\section{System Design}
+% TODO(the section-scope task): Insert the blinded section scope paragraph. Describe the
+% mediation layer between capture inputs and assistant context/output, with
+% explicit data-flow boundaries and no production-readiness claims.
+\begin{figure}[t]
+  \centering
+  \fbox{\parbox{0.86\linewidth}{\centering Placeholder architecture figure: capture adapters $\rightarrow$ consent/policy engine $\rightarrow$ redaction engine $\rightarrow$ session memory gate $\rightarrow$ output guard $\rightarrow$ audit logger.}}
+  \caption{Planned PerceptFence runtime mediation architecture. Replace this placeholder with the generated blinded figure after the post-filing benchmark/figure gate opens.}
+  \Description{Placeholder box listing the planned data flow through capture, policy, redaction, memory, output guard, and audit components.}
+  \label{fig:architecture-placeholder}
+\end{figure}
+
+\subsection{Capture Adapters}
+% TODO: Summarize the synthetic screen and speech event schema.
+
+\subsection{Redaction Engine}
+% TODO: Describe sensitive-token and region-level transformations backed by
+% synthetic fixtures.
+
+\subsection{Session Memory Gate}
+% TODO: Describe what may enter, remain in, or be removed from session memory.
+
+\subsection{Output Guard}
+% TODO: Describe response filtering for restricted content and prompt-injection
+% text visible on screen.
+
+\subsection{Audit Logger}
+% TODO: Describe policy-decision logging. Do not claim tamper evidence unless
+% an implementation and test are added.
+
+\section{Policy and Consent Model}
+% TODO(the section-scope task): Insert the blinded section scope paragraph. Specify policy
+% objects for what the assistant may see, retain, and say at runtime, including
+% session defaults and per-window or per-region overrides. Do not claim legal
+% informed-consent coverage.
+
+\section{Implementation}
+% TODO(the section-scope task): Insert the blinded section scope paragraph. Map claims to
+% runnable files under src/. Current expected modules: capture adapter,
+% redaction engine, consent/policy engine, session memory gate, output guard,
+% audit logger, synthetic fixture loader, and smoke-test harness.
+
+\section{Evaluation}
+% TODO(the section-scope task): Insert the blinded section scope paragraph. Convert this
+% section from plan to results only after eval/results/baseline_vs_guarded.csv
+% exists and has been verified.
+
+\subsection{Synthetic Scenarios}
+% Planned synthetic-only scenario classes: terminal secrets, chat-style messages,
+% browser personal data, spoken sensitive fragments, prompt-injection text,
+% dense interfaces, zoom changes, small fonts, and fast window switching.
+
+\subsection{Metrics}
+% Planned metrics: sensitive exposure rate, false block rate, latency overhead,
+% and task completion against an unmediated prototype baseline.
+
+\begin{table}[t]
+  \caption{Benchmark table placeholder. Populate only from eval/results/baseline_vs_guarded.csv after the post-filing gate opens.}
+  \Description{Placeholder table with rows for baseline and guarded modes and columns for planned evaluation metrics.}
+  \label{tab:benchmark-placeholder}
+  \centering
+  \begin{tabular}{lllll}
+    \toprule
+    Condition & Sensitive exposure & False blocks & Latency overhead & Task completion \\
+    \midrule
+    Baseline & planned & planned & planned & planned \\
+    Guarded & planned & planned & planned & planned \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Limitations and Ethics}
+% TODO(the section-scope task): Insert the blinded section scope paragraph. Include the short
+% reviewer-facing ethics note required by the CFP. Current scope is
+% synthetic-only and contains no non-synthetic screen captures, live-session
+% captures, production telemetry, or human-subject data.
+
+\section{Related Work}
+% TODO(the section-scope task): Insert the blinded section scope paragraph. Add anonymized,
+% third-person citations covering intelligent user interfaces, multimodal
+% assistants, runtime permissions, redaction, assistant memory controls, and
+% prompt-injection defenses. Keep self-citations in third person during
+% double-blind review.
+
+\section{GenAI Usage Disclosure}
+% IUI 2027 asks for this section right before references when GenAI is used
+% beyond editing the authors' own text. Replace this placeholder with the true
+% disclosure before submission.
+This section will disclose any use of generative AI tools across research design, code and data generation, analysis, and writing. It is currently a placeholder and must be updated before submission.
+
+% TODO: Add references.bib and uncomment once citations are inserted.
+% \bibliographystyle{ACM-Reference-Format}
+% \bibliography{references}
+
+\end{document}

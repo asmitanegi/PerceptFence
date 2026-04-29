@@ -1,0 +1,20 @@
+{
+  "artifact": "anonymous_screen_share_runtime_scaffold",
+  "version": "0.1.0",
+  "allowed_actions": [
+    "redact_before_model",
+    "suppress_notification",
+    "summarize_without_identifier",
+    "block_memory_write",
+    "ignore_screen_instruction",
+    "require_stable_window",
+    "increase_ocr_sensitivity",
+    "selective_redact"
+  ],
+  "decision_log_fields": [
+    "fixture_id",
+    "scenario_class",
+    "action",
+    "reason"
+  ]
+}

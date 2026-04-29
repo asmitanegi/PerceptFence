@@ -1,0 +1,12 @@
+.DS_Store
+
+# Blind-review hygiene — NEVER commit author identity into the review pack.
+# Real authors live in paper/authors.private.md and are introduced only at camera-ready.
+paper/authors.private.md
+**/authors.private.md
+**/*.private.md
+
+# Paper-enhancer phase outputs are tracked scaffold artifacts for NEE-1254.
+# Keep arbitrary local scratch out, but allow the committed phase markdown files.
+paper/skill-output/*
+!paper/skill-output/phase-*.md
