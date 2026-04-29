@@ -11,3 +11,10 @@ paper/authors.private.md
 paper/*
 
 docs/*
+# M5 deliverable: the headline figure rendered from baseline_vs_guarded.csv
+# is tracked. Its renderer (eval/render_figure.py) is deterministic given
+# the CSV input.
+!docs/figures/
+docs/figures/*
+!docs/figures/headline_ser.svg
+!docs/figures/README.md
