@@ -270,6 +270,66 @@ class RuntimeModuleTests(unittest.TestCase):
         self.assertNotIn("DEMO_SECRET_TOKEN_12345", " ".join(value for event in logger.events for value in event.values()))
         self.assertNotIn("alex.example.invalid", " ".join(value for event in logger.events for value in event.values()))
 
+    def test_benchmark_metric_helpers(self):
+        """The M5 benchmark exposes pure metric helpers; smoke them
+        directly so a harness change cannot silently shift the
+        sensitive-exposure / false-block / task-success definitions."""
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "eval"))
+        from benchmark import (  # noqa: E402  (test-only import)
+            ANNOTATIONS, compute_ser, compute_fbr, compute_tsr, percentile,
+            exposed_in,
+        )
+        from screenshare_mediator.models import RuntimeResult
+
+        # exposed_in: literal substring with placeholder treated as non-exposure.
+        self.assertEqual(exposed_in("DEMO_SECRET", "value [REDACTED]"), 0)
+        self.assertEqual(exposed_in("DEMO_SECRET", "value DEMO_SECRET"), 1)
+        self.assertEqual(exposed_in("", "anything"), 0)
+
+        # percentile: empty list -> 0; single -> itself; linear interp on length 5.
+        self.assertEqual(percentile([], 0.95), 0.0)
+        self.assertEqual(percentile([7.0], 0.99), 7.0)
+        self.assertAlmostEqual(percentile([1.0, 2.0, 3.0, 4.0, 5.0], 0.5), 3.0)
+
+        # compute_ser surface-decomposition on a hand-built result.
+        annotation = ANNOTATIONS["terminal_secret"]
+        baseline_res = RuntimeResult(
+            path="baseline",
+            fixture_id="t",
+            model_context="token DEMO_SECRET_TOKEN_12345",
+            assistant_output="echo DEMO_SECRET_TOKEN_12345",
+            memory_writes=(),
+            audit_events=(),
+        )
+        ser = compute_ser(annotation, baseline_res)
+        self.assertEqual(ser["SER"], 1.0)
+        self.assertEqual(ser["SER_context"], 1.0)
+        self.assertEqual(ser["SER_output"], 1.0)
+        self.assertEqual(ser["SER_memory"], 0.0)
+        self.assertEqual(ser["SER_audit"], 0.0)
+
+        guarded_res = RuntimeResult(
+            path="guarded",
+            fixture_id="t",
+            model_context="token [REDACTED]",
+            assistant_output="[OUTPUT BLOCKED: redact_before_model]",
+            memory_writes=(),
+            audit_events=(),
+        )
+        ser_g = compute_ser(annotation, guarded_res)
+        self.assertEqual(ser_g["SER"], 0.0)
+
+        # FBR: benign unit absent from joined output+context counts as blocked.
+        bru = compute_fbr(
+            annotation,
+            RuntimeResult("guarded", "t", "[HELD]", "[HELD]", (), ()),
+        )
+        self.assertGreater(bru, 0.0)
+
+        # TSR: zero on baseline (sensitive unit present), one on a clean guarded.
+        self.assertEqual(compute_tsr(annotation, baseline_res), 0)
+        self.assertEqual(compute_tsr(annotation, guarded_res), 1)
+
     def test_audit_logger_hash_chain_verifies_and_detects_tamper(self):
         """The hash chain must (i) verify on a clean log, (ii) detect a
         post-hoc edit to any field of any event, and (iii) detect a
