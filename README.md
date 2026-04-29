@@ -96,7 +96,7 @@ cd src
 python3 -m pytest tests/ -v
 ```
 
-Expected: **27 passed in ~0.03s** (Python 3.14 on a 2024 laptop).
+Expected: **29 passed in ~0.03s** (Python 3.14 on a 2024 laptop).
 
 ### Run the smoke test
 
@@ -120,7 +120,16 @@ The smoke path exercises three contrasts: terminal redaction, prompt-injection o
 python3 eval/ablation_study.py
 ```
 
-Writes `eval/results/per_module_ablation.csv` and `eval/results/per_fixture_ablation.csv`. Treat these as **bounded synthetic diagnostics, not the M5 benchmark**.
+Writes `eval/results/per_module_ablation.csv` and `eval/results/per_fixture_ablation.csv`. These are bounded synthetic diagnostics; see [`eval/metrics.md`](eval/metrics.md) for the formal definitions.
+
+### Run the M5 benchmark
+
+```bash
+python3 eval/benchmark.py        # writes eval/results/baseline_vs_guarded.csv
+python3 eval/render_figure.py    # writes docs/figures/headline_ser.svg
+```
+
+The benchmark runs 200 paired baseline-vs-guarded iterations per fixture (10 warmup discarded) and reports SER (with surface decomposition), FBR, TSR, and latency overhead per scenario class. The figure renderer is hand-built SVG with no third-party dependency.
 
 Current diagnostic table (committed snapshot):
 
@@ -146,12 +155,25 @@ PerceptFence interposes between raw capture and the assistant. A thin synthetic 
 |---|---|
 | **M0** Venue and thesis lock | ✅ Complete |
 | **M1** Threat model and policy boundaries | ✅ Complete |
-| **M2** Synthetic fixture set + runtime modules | ✅ Complete (27/27 tests pass, 11 scenario classes) |
+| **M2** Synthetic fixture set + runtime modules | ✅ Complete (29/29 tests pass, 11 scenario classes) |
 | **M3** Anonymous paper skeleton + metric specification | ✅ Complete |
 | **M4** Smoke path + ablation diagnostics + adversarial-evasion coverage | ✅ Complete (full_guard 11/11 on synthetic diagnostics) |
-| **M5** Post-filing benchmark, figure, blinded submission pack | 🚧 Gated until **2026-06-07** (see `PROJECT.md`) |
+| **M5** Post-filing benchmark, figure, blinded submission pack | ✅ Complete (2026-04-29, under explicit gate override) |
 
-> **Pre-filing-gate discipline.** Until 2026-06-07, no `eval/results/baseline_vs_guarded.csv` is generated and no figure is produced from benchmark data. The project deliberately publishes only ablation diagnostics that are explicitly labeled as synthetic and bounded. Full benchmark CSV, generated architecture figure, and blinded submission pack land after the gate.
+## M5 headline (synthetic, 11 fixtures × 200 paired iterations)
+
+| Metric | Baseline | Guarded | Delta |
+|---|---:|---:|---:|
+| **SER** (sensitive exposure rate) | **1.000** | **0.000** | −1.000 |
+| **FBR** (false block rate) | 0.000 | 0.143 | +0.143 |
+| **TSR** (task success rate) | 0.091 | 1.000 | +0.909 |
+| Median latency | 2.2 µs | 33.8 µs | +31.6 µs |
+| p95 latency | 4.5 µs | 73.2 µs | +68.7 µs |
+| p99 latency | 5.0 µs | 83.2 µs | +78.2 µs |
+
+Per-class breakdown lives in [`eval/results/baseline_vs_guarded.csv`](eval/results/baseline_vs_guarded.csv). The headline figure ([`docs/figures/headline_ser.svg`](docs/figures/headline_ser.svg)) shows SER per scenario class, baseline vs guarded.
+
+The SER cost is honest: full sensitive-unit elimination on the synthetic fixture set comes paired with an FBR of 0.143 (two of fourteen benign task-critical units blocked by aggressive policy actions — context exclusion on the spoken-sensitive-fragment fixture and window-hold on the fast-window-switching fixture). The latency overhead is sub-100 microseconds at p99. These numbers describe the synthetic fixture set; they do not estimate effect sizes against unseen attacks. See `supplement/artifact_checklist.md` §8 for the full known-limitations enumeration.
 
 ## Claim discipline
 

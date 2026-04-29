@@ -28,6 +28,8 @@ The wording above is mirrored verbatim across `README.md`, `paper/abstract.md`, 
 
 The pre-filing window's hard rule: do not generate `eval/results/baseline_vs_guarded.csv` or any benchmark figure with achieved-result claims until 2026-06-07 unless the project owner explicitly overrides the gate in writing.
 
+**Gate-override note (2026-04-29).** The project owner explicitly overrode the pre-filing gate on 2026-04-29 to unblock M5 deliverables ahead of the original 2026-06-07 schedule. The benchmark CSV, headline figure, and supplement bundle were produced under that override. The override is recorded here so the gate's audit trail stays legible in the project history.
+
 ## Milestones
 
 ### M0 — Venue and thesis lock
@@ -119,6 +121,17 @@ The pre-filing window's hard rule: do not generate `eval/results/baseline_vs_gua
 **Exit test:** Run the benchmark and figure-generation commands from a fresh clone. Open the CSV and figure; values must match. Run the blind-review grep from M3 across the final pack. Run the private **author-leak grep** documented in gitignored `paper/authors.private.md` against the review-pack tree before submission; do not copy private author patterns into tracked files.
 
 Any hit outside `paper/authors.private.md` itself is a blocker — the review pack is not blind-safe. Confirm `paper/paper.tex` compiles or, if compilation tooling is not installed, at least lints for the correct document class and required sections.
+
+**Status:** Complete (2026-04-29 under explicit gate override).
+
+**Headline (synthetic, 11 fixtures × 200 paired iterations):**
+
+- SER baseline → guarded: **1.000 → 0.000** (delta 1.000)
+- FBR baseline → guarded: 0.000 → 0.143 (cost of context-exclusion + window-hold on benign units)
+- TSR baseline → guarded: 0.091 → 1.000
+- Median latency overhead: **~32 µs** (p95 ~70 µs, p99 ~78 µs)
+
+Artefacts produced: `eval/results/baseline_vs_guarded.csv`, `docs/figures/headline_ser.svg`, `supplement/artifact_checklist.md`.
 
 ## Dependencies & risks
 
