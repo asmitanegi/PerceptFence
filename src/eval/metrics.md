@@ -217,7 +217,7 @@ Minimum adversarial reporting table shape:
 evasion_technique | fixture_count | sensitive_unit_count | detected_unit_count | EDR_e | expected_guarded_action | notes
 ```
 
-**Known limitation:** Novel or unknown credential formats remain false-negative-prone. Report failures as misses under the nearest evasion category instead of expanding claims beyond the configured detectors.
+**Known limitation:** Unknown credential formats remain false-negative-prone. Report failures as misses under the nearest evasion category instead of expanding claims beyond the configured detectors.
 
 ## Required reporting format
 

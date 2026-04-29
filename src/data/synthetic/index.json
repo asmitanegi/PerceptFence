@@ -1,6 +1,6 @@
 {
   "description": "Synthetic-only fixtures for anonymous screen-share assistant runtime smoke testing.",
-  "fixture_count": 10,
+  "fixture_count": 11,
   "fixtures": [
     {
       "scenario_class": "terminal_secret",
@@ -41,6 +41,10 @@
     {
       "scenario_class": "mixed_sensitivity",
       "file": "mixed_sensitivity.json"
+    },
+    {
+      "scenario_class": "encoded_screen_instruction",
+      "file": "encoded_screen_instruction.json"
     }
   ]
 }

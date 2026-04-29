@@ -21,6 +21,7 @@ EXPECTED_SCENARIO_CLASSES = (
     "homoglyph_credential",
     "split_pii",
     "mixed_sensitivity",
+    "encoded_screen_instruction",
 )
 
 REQUIRED_FIXTURE_FIELDS = {

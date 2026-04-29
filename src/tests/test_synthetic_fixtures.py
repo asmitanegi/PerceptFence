@@ -28,6 +28,46 @@ class SyntheticFixtureTests(unittest.TestCase):
             self.assertTrue(candidate.is_relative_to(synthetic_root))
             self.assertTrue(candidate.exists())
 
+    def test_validate_fixture_set_rejects_missing_required_field(self):
+        with self.assertRaises(ValueError) as ctx:
+            validate_fixture_set([{
+                "id": "x", "scenario_class": "terminal_secret", "modality": ["screen_text"],
+                "synthetic": True, "input": {}, "expected_policy_action": "redact_before_model",
+                # 'risk_label' missing
+            }])
+        self.assertIn("missing fields", str(ctx.exception))
+
+    def test_validate_fixture_set_rejects_non_synthetic_flag(self):
+        full = {
+            "id": "x", "scenario_class": "terminal_secret", "modality": ["screen_text"],
+            "synthetic": False, "risk_label": "test",
+            "input": {}, "expected_policy_action": "redact_before_model",
+        }
+        with self.assertRaises(ValueError) as ctx:
+            validate_fixture_set([full])
+        self.assertIn("synthetic=true", str(ctx.exception))
+
+    def test_validate_fixture_set_rejects_unknown_scenario_class(self):
+        full = {
+            "id": "x", "scenario_class": "not_a_real_class", "modality": ["screen_text"],
+            "synthetic": True, "risk_label": "test",
+            "input": {}, "expected_policy_action": "redact_before_model",
+        }
+        with self.assertRaises(ValueError) as ctx:
+            validate_fixture_set([full])
+        self.assertIn("unknown scenario_class", str(ctx.exception))
+
+    def test_validate_fixture_set_rejects_coverage_shortfall(self):
+        # One fixture, valid in itself, but coverage incomplete.
+        full = {
+            "id": "x", "scenario_class": "terminal_secret", "modality": ["screen_text"],
+            "synthetic": True, "risk_label": "test",
+            "input": {}, "expected_policy_action": "redact_before_model",
+        }
+        with self.assertRaises(ValueError) as ctx:
+            validate_fixture_set([full])
+        self.assertIn("scenario coverage mismatch", str(ctx.exception))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -19,6 +19,7 @@ ACTION_BY_SCENARIO_CLASS = {
     "homoglyph_credential": "redact_before_model",
     "split_pii": "redact_before_model",
     "mixed_sensitivity": "selective_redact",
+    "encoded_screen_instruction": "ignore_screen_instruction",
 }
 
 

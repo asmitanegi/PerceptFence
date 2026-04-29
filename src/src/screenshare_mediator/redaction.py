@@ -90,8 +90,11 @@ class RedactionEngine:
         r"(?i)\b(?:sk|pk|ghp|demo|synthetic)?[-_A-Z0-9]{8,}\b|"
         r"\b[A-Z0-9_-]*(?:SECRET|TOKEN|KEY)[A-Z0-9_-]*\b"
     )
+    # Case-insensitive but NOT dotall: detection and per-line redaction must
+    # agree on what "within 100 characters" means. Cross-line attacks are
+    # called out as residual risk in the paper's Limitations section.
     _PROMPT_INJECTION_RE = re.compile(
-        r"(?is)\b(ignore|bypass|disable|override)\b.{0,100}\b(redaction|policy|policies|guard|system|instruction)\b|"
+        r"(?i)\b(ignore|bypass|disable|override)\b.{0,100}\b(redaction|policy|policies|guard|system|instruction)\b|"
         r"\b(repeat|reveal|print|show)\b.{0,100}\b(api[-_\s]?key|secret|token|hidden field|verbatim)\b"
     )
     _EMAIL_RE = re.compile(r"\b[\w.%-]+@?[\w.-]+\.invalid\b|\b[\w.%-]+@[\w.-]+\b")
@@ -108,7 +111,7 @@ class RedactionEngine:
         action = decision.action
         context = self._sanitize_untrusted_text(session.raw_context)
 
-        if action in {"redact_before_model", "selective_redact"}:
+        if action == "redact_before_model":
             pass
         elif action == "suppress_notification":
             context = self._sanitize_untrusted_text(

@@ -26,7 +26,7 @@ Article about: "Design and evaluation of a consent-aware runtime layer for real-
 
 ## Synthetic scenario coverage
 
-`data/synthetic/` currently covers ten classes:
+`data/synthetic/` currently covers eleven classes:
 
 1. terminal secret
 2. chat/notification
@@ -38,6 +38,7 @@ Article about: "Design and evaluation of a consent-aware runtime layer for real-
 8. homoglyph credential
 9. split PII
 10. mixed sensitivity
+11. encoded screen instruction (role-play / chain-prompt evasion)
 
 All fixtures are invented and intentionally small so the full smoke test runs without network access or external data.
 
@@ -68,7 +69,7 @@ Baseline path: fixture=synthetic-terminal-secret-001 model_context_contains_sent
 Guarded path: fixture=synthetic-terminal-secret-001 action=redact_before_model model_context_contains_sentinel=False audit_events=2
 Prompt-injection path: baseline_leaked_instruction=True separate_context_guard_blocked=True output_guard_logged=True
 Context-exclusion path: baseline_reproduced_ssn=True guarded_context_contains_ssn=False guarded_output_mentions_phrase=False context_exclusion_logged=True
-SMOKE PASS: 10 synthetic scenarios validated; 3 runtime mediation paths exercised
+SMOKE PASS: 11 synthetic scenarios validated; 3 runtime mediation paths exercised
 ```
 
 The smoke path is intentionally not a benchmark and does not produce final evaluation claims.
