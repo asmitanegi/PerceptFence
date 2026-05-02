@@ -2,7 +2,7 @@
 
 > Anonymous draft for double/single-blind review. Do not include author identifiers. De-anonymization happens at submission time per the venue's policy.
 >
-> **Status:** Skeleton draft 1, 2026-05-02. Owner: NEE-240. Source-check tags `[src-chk]` are placeholders to be resolved by NEE-241.
+> **Status:** Draft 2, 2026-05-02. NEE-241 source-check complete: Section 3 (Related Work) written with 16 verified citations; §5.3 ablation error corrected (spoken_sensitive_fragment, not homoglyph_credential, is the fixture missed by redaction_only); §5.4 adversarial-evasion analysis filled from per_fixture_ablation.csv; §5.5 latency table filled from baseline_vs_guarded.csv; §5.6 no-prior-system claim confirmed; references.bib committed. All placeholders resolved.
 
 ---
 
@@ -62,9 +62,44 @@ Every empirical claim in this paper maps to a metric defined in Section 5.1 and 
 
 ## 3. Related Work
 
-[src-chk] Prior work on runtime privacy in conversational assistants. [src-chk] Prompt injection and indirect prompt injection in multimodal contexts. [src-chk] Redaction and PII detection systems. [src-chk] Consent and policy engines for AI systems. [src-chk] Audit logging and tamper-evident systems for ML pipelines. [src-chk] Screen-share security in collaborative work environments.
+**Runtime capture permissions.**
+Mobile operating systems use API-level permissions to control which applications may access the camera, microphone, or screen-capture surface.
+Felt et al. characterize Android's permission model and find that most users grant permissions without understanding their scope [@felt2012permissions].
+A companion study shows that applications routinely request permissions they do not use, creating unnecessary exposure [@felt2011android].
+At the system layer, TaintDroid tracks the flow of privacy-sensitive data through the Android runtime, demonstrating that third-party applications frequently transmit sensitive user data to advertising networks without user awareness [@enck2014taintdroid].
+These system-level designs gate access to a capture API but do not control what happens to the content of the captured stream after access is granted.
+PerceptFence operates at the content layer rather than the access layer: it interposes between a granted capture stream and an AI assistant's context-construction step.
 
-NEE-241 will resolve every `[src-chk]` placeholder, build `references.bib`, and replace this section with a coherent narrative tying our seven modules to existing work and clearly stating the gap we close.
+**Privacy norms and contextual integrity.**
+Nissenbaum frames appropriate information flow in terms of contextual integrity: information should flow in ways consistent with the norms of the context in which it was originally disclosed [@nissenbaum2004privacy].
+Apthorpe et al. apply contextual integrity to smart-home IoT devices, showing that users hold nuanced norms about which data a home device may forward to third-party services, conditioned on the recipient and stated purpose [@apthorpe2018smart].
+Shvartzshnaider and Duddu extend this framework to large language models, measuring deviations between the information-flow choices made by LLMs and contextually appropriate expectations, and proposing an auditing metric grounded in contextual integrity theory [@shvartzshnaider2026privacy].
+The consent and policy engine in PerceptFence enforces a simplified contextual boundary by content type: it blocks sensitive screen and speech content from entering the assistant's context unless the active session policy permits that content category.
+
+**Privacy-aware AI assistants.**
+Xu et al. study user and expert expectations of AI-powered privacy assistants that automate privacy decisions on behalf of users, identifying factors that influence acceptability, including transparency of information sources and regulatory context [@xu2025acceptability].
+Danry et al. build a gaze-aware multimodal assistant that uses egocentric video to infer where a user is struggling during a task, raising questions about what such an assistant is permitted to observe and how that observation boundary should be defined [@danry2026gaze].
+These systems address AI assistant design and user-facing controls but do not impose runtime content-level filtering on a continuously changing multimodal stream.
+PerceptFence contributes a mediation layer targeting live screen-share input rather than post-hoc user control or assistant behavior calibration.
+
+**Screen-capture privacy in deployed systems.**
+Microsoft Recall captures a desktop screenshot every few seconds and uses on-device LLMs to provide a retrievable memory layer; early deployments did not filter sensitive content from the snapshot store, and subsequent versions added opt-in filtering for recognized credential patterns after significant public and security-research scrutiny [@microsoft2024recall].
+Zoom AI Companion provides in-meeting AI assistance including transcription and summaries; its privacy documentation describes zero-data-retention options and per-account toggle controls, but these operate at the session level rather than at the granularity of what the assistant may observe within an active session [@zoom2024ai].
+Neither system exposes per-content-category runtime controls during an active session.
+PerceptFence targets this gap: it mediates at the frame and utterance level rather than only at session setup time.
+
+**Prompt injection attacks.**
+Screen-visible content introduces a direct prompt injection surface when an AI assistant observes and processes text displayed on screen.
+Greshake et al. systematize indirect prompt injection attacks in LLM-integrated applications, showing that attacker-controlled content placed in retrieved data can override application instructions without any direct user interaction [@greshake2023indirect].
+Liu et al. extend this analysis to black-box attacks on commercial applications, reporting high success rates against production LLM integrations and proposing a taxonomy of injection techniques [@liu2023prompt].
+Screen-share sessions are a particularly direct injection surface because attacker-controlled text is visually displayed and the assistant observes the display without intermediation; the synthetic benchmark includes prompt-injection-on-screen and encoded-screen-instruction scenarios covering this threat.
+
+**Defenses against prompt injection and agent safeguards.**
+StruQ separates instructions and data into structured channels, fine-tuning the LLM to follow only the designated instruction channel, reducing injection success rates substantially on the evaluated benchmark [@chen2025struq].
+SecAlign uses preference optimization to train an LLM to prefer secure outputs over injection-compliant outputs, achieving injection success rates below ten percent against a range of attacks including ones not seen during training [@chen2025secalign].
+Yang et al. demonstrate that injected content written into an agent's long-term memory can persist across sessions and trigger unauthorized tool actions in future sessions [@yang2026zombie]; this result motivates PerceptFence's memory gate, which prevents sensitive content from being written to session memory under configurable policy.
+Chen and Cong propose AgentGuard, which uses the agent orchestrator itself to enumerate unsafe tool-use workflows and generate safety constraints that can be validated before deployment [@chen2025agentguard].
+These defenses operate at the model fine-tuning or orchestration level; PerceptFence operates at the input and output mediation layer without modifying the underlying model, making it applicable to any assistant model but bounded by the limits of rule-based detection, which the system design and evaluation explicitly acknowledge.
 
 ---
 
@@ -160,24 +195,50 @@ We run six variants on the eleven fixtures: `baseline` (no mediation), `policy_o
 | `audit_log_only` | policy + audit logger | 0.000 (0/11) | 10 | 8 | 0 | 11 | 0 |
 | `full_guard` | all | **1.000 (11/11)** | 0 | 0 | 5 | 23 | 10 |
 
-**Reading the table.** Redaction alone removes ten of eleven sensitive units from both context and output (the missing one is the homoglyph-evasion fixture). Output guard alone blocks all assistant outputs that would have leaked, but does so by blocking *all* responses on the affected fixtures — acceptable as a last-resort fallback, but not a substitute for upstream filtering. Memory gate alone prevents persistence but lets the model see and respond with sensitive content. The full guard composition reaches the expected outcome on every fixture in the benchmark, with no context exposures, no output exposures, five precise output blocks (used only when upstream redaction was insufficient), and an audit trail of 23 decision events.
+**Reading the table.** Redaction alone removes ten of eleven sensitive units from both context and output; the missed fixture is `spoken_sensitive_fragment`, whose expected policy action is `block_memory_write` — a retention control that the redactor does not implement. Output guard alone blocks all assistant outputs that would have leaked, but does so by blocking *all* responses on the affected fixtures — acceptable as a last-resort fallback, but not a substitute for upstream filtering. Memory gate alone prevents persistence but lets the model see and respond with sensitive content. The full guard composition reaches the expected outcome on every fixture in the benchmark, with no context exposures, no output exposures, five precise output blocks (used only when upstream redaction was insufficient), and an audit trail of 23 decision events.
 
 Per-fixture results are in `eval/results/per_fixture_ablation.csv` and broken out in Section 5.4.
 
 ### 5.4 Per-fixture results and adversarial-evasion analysis
 
-[src-chk: cross-reference per_fixture_ablation.csv specific rows for the three adversarial-evasion fixtures to show whether the full guard handled each, and explain why the redaction-only configuration missed the homoglyph case but full_guard caught it via output_guard.]
+The three adversarial-evasion fixtures are `homoglyph_credential`, `split_pii`, and `encoded_screen_instruction`. Per `eval/results/per_fixture_ablation.csv`:
+
+| Fixture | redaction_only outcome | full_guard outcome | output_blocked in full_guard | Mechanism |
+| --- | --- | --- | --- | --- |
+| `homoglyph_credential` | expected_outcome_met=True | expected_outcome_met=True | False | Unicode normalization before pattern check in the redactor removes the homoglyph substitution; output guard is not invoked. |
+| `split_pii` | expected_outcome_met=True | expected_outcome_met=True | True | Whitespace/separator normalization in the redactor catches split digits; the output guard also fires as defense-in-depth (output_blocked=True), confirming the response would have been blocked even if the redactor had missed it. |
+| `encoded_screen_instruction` | expected_outcome_met=True | expected_outcome_met=True | True | The redactor strips the encoding marker from the screen text; the output guard additionally blocks the response as defense-in-depth, confirming the instruction did not produce a compliant assistant output. |
+
+All three adversarial-evasion fixtures are handled by `full_guard`. The redactor handles `homoglyph_credential` and `split_pii` via normalization; the output guard provides a second layer on `split_pii` and `encoded_screen_instruction`. The contrast with `redaction_only` (also expected_outcome_met=True for all three) shows that the redactor's normalization is the primary control for evasion; the output guard adds defense-in-depth. The one fixture that `redaction_only` misses is `spoken_sensitive_fragment` (block_memory_write action), which requires the memory gate — a retention control, not a content-redaction control.
 
 ### 5.5 Latency overhead
 
-[src-chk: report wall-clock comparison from harness once benchmark instrumentation is finalized; current results CSV does not include `t_i^p` columns.]
+Per `eval/results/baseline_vs_guarded.csv` (200 paired iterations per fixture):
+
+| Fixture | Baseline median (µs) | Guarded median (µs) | Guarded p99 (µs) | Overhead ratio (median) |
+| --- | --- | --- | --- | --- |
+| terminal_secret | 2.2 | 32.8 | 40.0 | 13.9× |
+| chat_notification | 2.2 | 55.5 | 73.1 | 24.6× |
+| browser_pii | 2.1 | 35.4 | 46.0 | 15.7× |
+| spoken_sensitive_fragment | 2.0 | 35.9 | 85.9 | 17.0× |
+| prompt_injection_on_screen | 2.1 | 32.6 | 44.8 | 14.6× |
+| fast_window_switching | 2.4 | 32.8 | 43.3 | 12.8× |
+| small_font_zoomed_ui | 2.1 | 28.8 | 99.8 | 12.5× |
+| homoglyph_credential | 2.1 | 27.3 | 28.1 | 11.9× |
+| split_pii | 2.1 | 28.6 | 37.1 | 12.5× |
+| mixed_sensitivity | 2.1 | 56.8 | 81.3 | 25.5× |
+| encoded_screen_instruction | 2.1 | 71.1 | 103.6 | 32.3× |
+
+The median guarded latency across all fixtures is approximately **32.8 µs** (range 27.3–71.1 µs). The p99 reaches **103.6 µs** for `encoded_screen_instruction`, which requires the most complex output-guard evaluation. The baseline median is approximately **2.2 µs**. The overhead ratio ranges from 11.9× to 32.3× across fixtures, reflecting that the mediation layer dominates the harness time relative to the no-op baseline, but the absolute overhead remains sub-millisecond in every case.
+
+These figures reflect a single-process Python evaluation harness on synthetic fixtures. They characterize the relative contribution of the mediation layer within the harness but should not be interpreted as production-system latencies; actual screen-capture AI pipelines involve OCR, network, and model inference that would dominate the mediation overhead.
 
 ### 5.6 Threats to validity
 
 - **Synthetic-only.** All fixtures are invented. Production-scale generalization is not claimed.
 - **Eleven fixtures.** Coverage is intentionally bounded; adversarial-evasion classes beyond the three studied are not characterized.
 - **English-only synthetic content.** Multi-lingual evasion is not studied.
-- **Single-system evaluation.** No comparison to prior runtime-mediation systems because, to our knowledge, none with the same control-surface decomposition exists. [src-chk: confirm in NEE-241.]
+- **Single-system evaluation.** No comparison to prior runtime-mediation systems because, to our knowledge, none with the same control-surface decomposition exists. A related-work survey (NEE-241, 2026-05-02) confirmed that the closest prior systems operate at the OS permission layer (TaintDroid, Android permission model) or session-level controls (Microsoft Recall, Zoom AI Companion), not at the per-frame, per-content-category runtime level described here.
 
 ---
 
@@ -217,7 +278,7 @@ We presented a runtime mediation layer for live screen-share AI assistants, deco
 
 ## References
 
-[src-chk] Built by NEE-241 from the [src-chk] markers above. Target: ≤25 references, BibTeX-valid `references.bib`, every cite key resolves end-to-end.
+Formatted by ACM-Reference-Format from `references.bib`. See that file for all 16 entries (≤25 cap). Every cite key used in this manuscript resolves in `references.bib`; the provenance table in the file records the verification path for each entry.
 
 ---
 
