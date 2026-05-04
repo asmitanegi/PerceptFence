@@ -61,9 +61,31 @@ In the current benchmark, the guarded path reduces mean sensitive exposure rate 
 We do not claim deployment readiness, formal privacy, usability, legal informed consent, or protection against real-world screen-share distributions.
 
 \section{Background and Related Work}
-This section is intentionally not source-complete in this conversion artifact.
-Related-work claims must be source-checked against original publications before submission, and the corresponding BibTeX entries must be added to \texttt{src/paper/references.bib}.
-Until that work is complete, this draft uses only comparison axes: runtime permissions and capture controls, privacy assistants and redaction tools, prompt-injection defenses, memory controls, and audit logging.
+This draft grounds the comparison axes in source-checked citations while avoiding priority claims.
+The related work is still a first pass; the final submission needs a deeper synthesis before claiming coverage.
+
+\textbf{Runtime permissions and capture controls.}
+Permission systems for camera, microphone, screen capture, and application access are the closest platform analogue to this work.
+Prior work has studied install-time permission comprehension, user-driven access control, contextual integrity in mobile permissions, and dynamic runtime permission decisions \citep{Felt2012AndroidPermissions,Roesner2012UserDrivenAccessControl,Wijesekera2015AndroidPermissionsRemystified,Wijesekera2017DynamicallyGrantedPermissions}.
+These systems typically authorize or deny access to a channel or resource, whereas PerceptFence assumes capture is already active and mediates the stream before assistant context, memory, or output use.
+
+\textbf{Privacy assistants and redaction tools.}
+Prior privacy-assistant and transparency systems motivate why users need help identifying and managing sensitive material \citep{Liu2016PersonalizedPrivacyAssistant,Li2017PrivacyStreams}.
+Screen masking and screen-capture redaction systems are closer to PerceptFence because they operate over visible application content or captured screen material \citep{Porat2009DynamicMasking,Goldsteen2015ApplicationScreenMasking,Cooley2012PrivacyPreservingScreenCapture}.
+PerceptFence instead frames redaction as one module inside a live assistant mediation path.
+The deterministic redaction engine is not presented as a general detector; it is a measurable placeholder for enforcing configured policy categories on synthetic fixtures.
+
+\textbf{Prompt-injection and agent safeguards.}
+Screen-visible instructions create a prompt-injection channel because the assistant may treat displayed text as task context.
+Indirect prompt-injection work shows why untrusted retrieved or observed content must not be treated as equivalent to developer or user intent \citep{Greshake2023IndirectPromptInjection}.
+Instruction-hierarchy work is relevant to this boundary because it explicitly separates higher- and lower-priority instructions inside LLM behavior \citep{Wallace2024InstructionHierarchy}.
+This prototype does not evaluate tool use, network exfiltration, or model-internal alignment.
+Its output guard measures only whether literal sensitive fragments and configured indirect-reference patterns are blocked in synthetic assistant responses.
+
+\textbf{Positioning.}
+The intended contribution is not a new capture API, a human-consent model, or a comprehensive privacy system.
+It is a runtime architecture and fixture-backed evaluation for separating what a live assistant may observe, retain, and say after capture begins.
+Any stronger related-work claim, including novelty or coverage, remains unsupported until the synthesis is complete.
 
 \section{System Model}
 The prototype interposes capture, policy, redaction, memory, output-guard, and audit modules between synthetic screen-share inputs and assistant-facing context.
