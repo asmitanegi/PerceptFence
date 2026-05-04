@@ -17,4 +17,5 @@ docs/*
 !docs/figures/
 docs/figures/*
 !docs/figures/headline_ser.svg
+!docs/figures/headline_ser.pdf
 !docs/figures/README.md
