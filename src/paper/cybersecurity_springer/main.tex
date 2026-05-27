@@ -1,0 +1,801 @@
+% ============================================================
+% PerceptFence — Springer Nature Cybersecurity submission
+% Template: sn-jnl.cls with sn-mathphys-num bibliography style
+% De-anonymized: Neeraj Kumar Singh, Parafin, Inc.
+% Venue: https://www.editorialmanager.com/cybe/
+% Created: 2026-05-03 (NEE-245)
+% QA gate: PASS (NEE-243, 2026-05-02)
+% ============================================================
+
+\documentclass[sn-mathphys-num]{sn-jnl}
+
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{url}
+
+%%% ── Title ─────────────────────────────────────────────────────────────────
+
+\title[Consent-Aware Runtime Mediation]{%
+  Consent-Aware Runtime Mediation for Privacy in Real-Time
+  Screen-Share AI Assistants}
+
+%%% ── Authors and affiliations ──────────────────────────────────────────────
+
+\author*[1]{\fnm{Neeraj Kumar} \sur{Singh}}
+
+\affil*[1]{%
+  \orgname{Parafin, Inc.},%
+  \orgaddress{%
+    \city{San Francisco},%
+    \state{California},%
+    \country{USA}%
+  }%
+}
+
+\corresp{*Corresponding author. E-mail: \url{neeraj@parafin.com}}
+
+%%% ── Abstract ───────────────────────────────────────────────────────────────
+
+\abstract{%
+Live screen-share AI assistants can observe raw screen and speech streams,
+but users lack fine-grained runtime control over what the assistant may see,
+retain, and say.
+Static chatbot and privacy controls do not close this gap: the sensitive
+content is in the live capture, not in the prompt, and the assistant needs
+fast-changing interface context to respond at all.
+We design and evaluate a runtime mediation layer that enforces consent,
+redaction, memory controls, and output safeguards for live multimodal
+assistance, sitting between capture adapters, session memory, and assistant
+responses.
+We evaluate the layer on synthetic screen-share scenarios covering secrets,
+personal data, sensitive speech fragments, screen-visible prompt injection,
+dense or zoomed interfaces, fast window switching, and three
+adversarial-evasion classes (Unicode-homoglyph credentials, split or spaced
+personal-data digits, and role-play\,/\,chain-prompt screen instructions),
+measuring sensitive exposure, false blocks, latency overhead, and task
+completion against an unmediated prototype baseline.
+We contribute a design and evaluation of runtime control mechanisms for
+screen-share assistants, with claims bounded to synthetic evidence.}
+
+%%% ── Keywords ───────────────────────────────────────────────────────────────
+
+\keywords{privacy, screen-share assistants, runtime mediation, consent,
+          redaction, multimodal AI, prompt injection, evaluation}
+
+\maketitle
+
+%%%──────────────────────────────────────────────────────────────────────
+\section{Introduction}\label{sec:intro}
+%%%──────────────────────────────────────────────────────────────────────
+
+Multimodal AI assistants are increasingly deployed inside live screen-share
+sessions, where they observe the same surface a human is explaining:
+terminals with credentials, browsers with personal data, chat overlays with
+personal notifications, and spoken fragments containing sensitive information.
+This deployment pattern is fundamentally different from the chatbot setting:
+the sensitive content is not in the user's prompt; it is in the live capture
+stream itself.
+
+Static privacy settings---blanket ``do not log,'' ``do not share with
+vendors'' toggles---address a different problem.
+They cannot answer questions like \textit{``this terminal window is okay but
+the password manager is not,''} \textit{``summarise what is on screen but
+never name the customer,''} or \textit{``redact this email address from your
+reply but use it to find the right ticket.''}
+These questions are about \textbf{runtime} mediation between capture and
+assistant: deciding, frame-by-frame and utterance-by-utterance, what the
+model sees, what gets retained, and what comes out.
+
+This paper presents a runtime mediation layer for live screen-share AI
+assistants.
+Our frozen thesis:
+
+\begin{itemize}
+  \item \textbf{Problem.}
+        Live screen-share AI assistants can observe raw screen and speech
+        streams, but users lack fine-grained runtime control over what the
+        assistant may see, retain, and say.
+  \item \textbf{What we solve.}
+        A runtime mediation layer that enforces consent, redaction, memory
+        controls, and output safeguards for live multimodal assistance.
+  \item \textbf{Contribution.}
+        Design and evaluation of a consent-aware runtime layer for real-time
+        screen-share assistants.
+\end{itemize}
+
+The layer interposes seven cooperating modules between raw capture and
+assistant response---screen capture adapter, speech event adapter, redaction
+engine, consent\,/\,policy engine, session memory gate, output guard, and
+audit logger---with three control surfaces: \textbf{observe}, \textbf{retain},
+and \textbf{say}.
+We design the layer to satisfy a stated adversary model
+(Section~\ref{sec:threat}), describe per-module enforcement and trust
+boundaries (Section~\ref{sec:design}), implement and test the prototype
+(Section~\ref{sec:impl}), and evaluate per-module contributions on a synthetic
+benchmark of eleven scenario classes including three adversarial-evasion
+classes (Section~\ref{sec:eval}).
+
+Our contributions:
+
+\begin{itemize}
+  \item \textbf{A consent-aware runtime mediation design} for screen-share AI
+        assistants, decomposed into seven modules with explicit per-module
+        trust assumptions and enforces-vs.-does-not-enforce boundaries.
+  \item \textbf{A synthetic evaluation benchmark} of eleven scenario classes
+        covering credentials, personal data, sensitive speech, prompt injection
+        on-screen, dense\,/\,zoomed interfaces, fast window switching, and
+        three adversarial-evasion classes (Unicode-homoglyph credentials,
+        split\,/\,spaced personal-data digits, role-play\,/\,chain-prompt
+        screen instructions).
+  \item \textbf{A per-module ablation study} isolating which mediation module
+        removes or blocks each annotated risk class, including a measurement
+        that the full guard achieves the expected outcome on every fixture
+        (11\,/\,11) while the unmediated baseline reaches it on none (0\,/\,11).
+  \item \textbf{A claim-to-metric audit framework} that ties every empirical
+        claim in the evaluation to an annotated metric definition, preventing
+        unmeasured ``privacy'' claims that have weakened prior work.
+\end{itemize}
+
+We make no claims about formal privacy preservation, differential privacy
+guarantees, defence against compromised hosts or models, or completeness
+against unknown adversarial-evasion classes.
+The contribution is bounded: a design and evaluation of runtime control
+mechanisms on a synthetic benchmark.
+
+%%%──────────────────────────────────────────────────────────────────────
+\section{Threat Model}\label{sec:threat}
+%%%──────────────────────────────────────────────────────────────────────
+
+We separate in-scope runtime threats from excluded systems-security threats.
+The contribution is meaningful only relative to the risks it chooses to
+handle.
+
+\subsection{Adversary classes}\label{sec:adversaries}
+
+Table~\ref{tab:adversaries} lists the eight adversary classes considered.
+
+\begin{table}[ht]
+\caption{Adversary classes and scope decisions.}
+\label{tab:adversaries}
+\begin{tabular}{@{}lp{3.8cm}lp{5.2cm}@{}}
+\toprule
+ID & Adversary & In scope? & Rationale \\
+\midrule
+A1 & Malicious screen content (attacker controls displayed text\,/\,visuals,
+     including instructions meant to manipulate the assistant)
+   & Yes --- primary
+   & Prompt injection through displayed content is the central
+     screen-share-specific risk. \\[4pt]
+A2 & Malicious meeting participant (deliberately displays sensitive content
+     or prompts the assistant to reveal content outside another
+     participant's consent)
+   & Yes
+   & Tests whether consent and output policies hold under adversarial
+     participation. \\[4pt]
+A3 & Curious or over-privileged user (tries to lower
+     consent\,/\,redaction\,/\,retention to expose more than the policy allows)
+   & Yes
+   & Distinguishes enforceable runtime policy from advisory user
+     preferences. \\[4pt]
+A4 & Assistant output leakage (model repeats, summarises, infers, or
+     indirectly references content that should have been redacted or gated)
+   & Yes
+   & Motivates the memory gate and output guard. \\[4pt]
+A5 & Temporal exposure (sensitive content appears briefly during window
+     switches, popups, zoom changes, or small-font rendering)
+   & Yes
+   & Matches the synthetic scenarios and tests mediation under changing
+     context. \\[4pt]
+A6 & Compromised infrastructure (read\,/\,modify audit logs, session
+     storage, runtime state, backend services)
+   & \textbf{No}
+   & Reasonable exclusion for the current prototype.
+     We do not claim tamper-evidence or infrastructure hardening. \\[4pt]
+A7 & Poisoned model or supply chain
+   & \textbf{No}
+   & Broader systems-security problem named as out of scope. \\[4pt]
+A8 & Operating-system compromise (malware controls host OS, display server,
+     microphone stack, or clipboard)
+   & \textbf{No}
+   & Cannot be defended against without a trusted-computing design. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Trust boundaries}\label{sec:trust}
+
+Captured frames, extracted text, audio events, and notification events are
+treated as \textbf{untrusted input} until the policy and redaction stages
+finish.
+The user's consent profile is \textbf{trusted at session start} and
+modifiable only via authenticated policy operations within the session.
+Backend storage and audit logs are \textbf{trusted under the A6 exclusion};
+we do not provide tamper-evidence beyond an append-only hash chain
+(Section~\ref{sec:audit}).
+
+\subsection{Claim guardrails}\label{sec:guardrails}
+
+Every empirical claim in this paper maps to a metric defined in
+Section~\ref{sec:metrics} and computed on the benchmark in
+Section~\ref{sec:ablation}.
+The phrase ``for privacy'' in the title refers to a measured \textit{reduction}
+in sensitive exposure rate on synthetic fixtures---not formal privacy
+preservation, differential privacy, side-channel absence, or prevention of all
+leakage.
+
+%%%──────────────────────────────────────────────────────────────────────
+\section{Related Work}\label{sec:related}
+%%%──────────────────────────────────────────────────────────────────────
+
+\paragraph{Runtime capture permissions.}
+Mobile operating systems use API-level permissions to control which
+applications may access the camera, microphone, or screen-capture surface.
+Felt et al.\ characterise Android's permission model and find that most users
+grant permissions without understanding their scope~\cite{felt2012permissions}.
+A companion study shows that applications routinely request permissions they do
+not use, creating unnecessary exposure~\cite{felt2011android}.
+At the system layer, TaintDroid tracks the flow of privacy-sensitive data
+through the Android runtime, demonstrating that third-party applications
+frequently transmit sensitive user data to advertising networks without user
+awareness~\cite{enck2014taintdroid}.
+These system-level designs gate access to a capture API but do not control
+what happens to the content of the captured stream after access is granted.
+PerceptFence operates at the content layer rather than the access layer: it
+interposes between a granted capture stream and an AI assistant's
+context-construction step.
+
+\paragraph{Privacy norms and contextual integrity.}
+Nissenbaum frames appropriate information flow in terms of contextual
+integrity: information should flow in ways consistent with the norms of the
+context in which it was originally disclosed~\cite{nissenbaum2004privacy}.
+Apthorpe et al.\ apply contextual integrity to smart-home IoT devices, showing
+that users hold nuanced norms about which data a home device may forward to
+third-party services, conditioned on the recipient and stated
+purpose~\cite{apthorpe2018smart}.
+Shvartzshnaider and Duddu extend this framework to large language models,
+measuring deviations between the information-flow choices made by LLMs and
+contextually appropriate expectations, and proposing an auditing metric
+grounded in contextual integrity theory~\cite{shvartzshnaider2026privacy}.
+The consent and policy engine in PerceptFence enforces a simplified contextual
+boundary by content type: it blocks sensitive screen and speech content from
+entering the assistant's context unless the active session policy permits that
+content category.
+
+\paragraph{Privacy-aware AI assistants.}
+Xu et al.\ study user and expert expectations of AI-powered privacy assistants
+that automate privacy decisions on behalf of users, identifying factors that
+influence acceptability, including transparency of information sources and
+regulatory context~\cite{xu2025acceptability}.
+Danry et al.\ build a gaze-aware multimodal assistant that uses egocentric video
+to infer where a user is struggling during a task, raising questions about what
+such an assistant is permitted to observe and how that observation boundary
+should be defined~\cite{danry2026gaze}.
+These systems address AI assistant design and user-facing controls but do not
+impose runtime content-level filtering on a continuously changing multimodal
+stream.
+PerceptFence contributes a mediation layer targeting live screen-share input
+rather than post-hoc user control or assistant behaviour calibration.
+
+\paragraph{Screen-capture privacy in deployed systems.}
+Microsoft Recall captures a desktop screenshot every few seconds and uses
+on-device LLMs to provide a retrievable memory layer; early deployments did not
+filter sensitive content from the snapshot store, and subsequent versions added
+opt-in filtering for recognised credential patterns after significant public and
+security-research scrutiny~\cite{microsoft2024recall}.
+Zoom AI Companion provides in-meeting AI assistance including transcription and
+summaries; its privacy documentation describes zero-data-retention options and
+per-account toggle controls, but these operate at the session level rather than
+at the granularity of what the assistant may observe within an active
+session~\cite{zoom2024ai}.
+Neither system exposes per-content-category runtime controls during an active
+session.
+PerceptFence targets this gap: it mediates at the frame and utterance level
+rather than only at session setup time.
+
+\paragraph{Prompt injection attacks.}
+Screen-visible content introduces a direct prompt injection surface when an AI
+assistant observes and processes text displayed on screen.
+Greshake et al.\ systematise indirect prompt injection attacks in
+LLM-integrated applications, showing that attacker-controlled content placed in
+retrieved data can override application instructions without any direct user
+interaction~\cite{greshake2023indirect}.
+Liu et al.\ extend this analysis to black-box attacks on commercial
+applications, reporting high success rates against production LLM integrations
+and proposing a taxonomy of injection techniques~\cite{liu2023prompt}.
+Screen-share sessions are a particularly direct injection surface because
+attacker-controlled text is visually displayed and the assistant observes the
+display without intermediation; the synthetic benchmark includes
+prompt-injection-on-screen and encoded-screen-instruction scenarios covering
+this threat.
+
+\paragraph{Defences against prompt injection and agent safeguards.}
+StruQ separates instructions and data into structured channels, fine-tuning the
+LLM to follow only the designated instruction channel, reducing injection
+success rates substantially on the evaluated benchmark~\cite{chen2025struq}.
+SecAlign uses preference optimisation to train an LLM to rank policy-aligned
+outputs above injection-compliant alternatives, achieving injection success
+rates below ten percent against a range of attacks including ones not seen
+during training~\cite{chen2025secalign}.
+Yang et al.\ demonstrate that injected content written into an agent's
+long-term memory can persist across sessions and trigger unauthorised tool
+actions in future sessions~\cite{yang2026zombie}; this result motivates
+PerceptFence's memory gate, which prevents sensitive content from being
+written to session memory under configurable policy.
+Chen and Cong propose AgentGuard, which uses the agent orchestrator itself to
+enumerate unsafe tool-use workflows and generate safety constraints that can
+be validated before deployment~\cite{chen2025agentguard}.
+These defences operate at the model fine-tuning or orchestration level;
+PerceptFence operates at the input and output mediation layer without modifying
+the underlying model, making it applicable to any assistant model but bounded
+by the limits of rule-based detection, which the system design and evaluation
+explicitly acknowledge.
+
+%%%──────────────────────────────────────────────────────────────────────
+\section{Design}\label{sec:design}
+%%%──────────────────────────────────────────────────────────────────────
+
+The runtime mediation layer is composed of seven modules along three control
+surfaces:
+
+\begin{itemize}
+  \item \textbf{Observe} --- what the assistant model is permitted to see
+        (screen capture adapter, speech event adapter, redaction engine,
+        consent\,/\,policy engine).
+  \item \textbf{Retain} --- what the session memory persists across turns
+        (session memory gate).
+  \item \textbf{Say} --- what the assistant is permitted to output
+        (output guard).
+\end{itemize}
+
+The audit logger sits across all three surfaces and records decisions without
+recording sensitive payload.
+
+\subsection{Control surface 1 --- Observe}\label{sec:observe}
+
+The observe surface controls what content the assistant may see. It is enforced
+by two modules in sequence: the consent\,/\,policy engine and the redaction
+engine.
+
+\paragraph{Screen capture adapter.}
+Captures display frames and extracts textual content. Output is untrusted text
+plus structural metadata (window class, region, font size, recency). Does
+\textbf{not} classify content; that is the consent\,/\,policy engine's job.
+
+\paragraph{Speech event adapter.}
+Captures audio events and emits utterance fragments with metadata (speaker
+role, modality, timestamp). Consent decisions can be per-session,
+per-modality, per-speaker, or per-content category; we adopt \textbf{per-modality
+with per-content-category overrides}.
+
+\paragraph{Consent\,/\,policy engine.}
+Resolves the active consent profile per frame and per utterance. Inputs: window
+class, modality, speaker role, content categories detected by the redactor, and
+the user's session policy. Output: a policy action $\in$
+\{\texttt{redact\_before\_model}, \texttt{suppress\_notification},
+\texttt{summarize\_without\_identifier}, \texttt{block\_memory\_write},
+\texttt{ignore\_screen\_instruction}, \texttt{require\_stable\_window},
+\texttt{increase\_ocr\_sensitivity}, \texttt{selective\_redact}\}, plus the
+rationale. The policy engine is the \textbf{only} authoritative decision-maker
+for all three control surfaces. Policy downgrade is prevented by a
+session-startup policy lock: relaxations require an authenticated re-consent
+step, not a runtime toggle.
+
+\paragraph{Redaction engine.}
+Pattern-based and category-based redaction over extracted text and speech
+fragments, applied after the policy decision. Replaces matched units with
+stable placeholders (\texttt{[REDACTED]}, \texttt{[EMAIL]}, \texttt{[RECORD]},
+\texttt{[PERSON]}). The engine is not model-based in this prototype, keeping
+trust boundary TB2 deterministic; the design enforces \textbf{reduction of
+sensitive exposure, not elimination}. Six deterministic transform families are
+configured: (1)~Unicode-NFKC normalisation and confusable-character remapping
+for homoglyph evasion; (2)~ignore-whitespace digit-group matching for split or
+spaced PII; (3)~credential-pattern redaction for terminal tokens and
+API-key-like strings; (4)~identifier summarisation with category placeholders;
+(5)~prompt-injection neutralisation classifying screen-visible instruction text
+as untrusted; and (6)~selective region redaction for mixed-sensitivity frames.
+
+\subsection{Control surface 2 --- Retain}\label{sec:retain}
+
+The retain surface controls what the assistant may remember across turns. It is
+enforced by the session memory gate.
+
+\paragraph{Session memory gate.}
+Filters what the assistant's session memory persists. Default: no sensitive
+units written to memory. When the policy action is
+\texttt{block\_memory\_write}, the gate uses \textit{mode-A context exclusion}:
+it zeros the model context for the affected turn before model invocation,
+preventing sensitive content from reaching the model at all for that turn.
+This is structurally stronger than conversation-history pruning, which removes
+content from future turns but cannot prevent the model using content already in
+the current context window. The cost is that benign task-critical units in the
+excluded context are also unavailable for that turn (measured FBR cost in
+Section~\ref{sec:per-fixture}). The gate records every exclusion event in the
+audit log without storing the suppressed content.
+
+\subsection{Control surface 3 --- Say}\label{sec:say}
+
+The say surface controls what the assistant may output. It is enforced by the
+output guard.
+
+\paragraph{Output guard.}
+Filters the assistant's response stream before display. Enforces output-side
+policy actions (block, redact, paraphrase). Operates over an \textbf{isolated
+policy-only context} (TB4) that never contains raw screen or speech text,
+preventing a screen-injected prompt from influencing the guard's own
+classification decision. Applies two filter stages: a literal-fragment denylist
+for the current session's non-shareable category set, and an
+indirect-disclosure classifier that detects outputs acknowledging the existence,
+category, or format of gated content without verbatim repetition. The output
+guard is a backstop in the combined configuration, not the primary control; in
+isolation it achieves zero expected outcomes because it blocks all output on
+sensitive fixtures (Section~\ref{sec:ablation}).
+
+\subsection{Audit logger}\label{sec:audit}
+
+Append-only log of policy decisions and module actions. Logs decision metadata
+only---never raw screen text, raw speech, raw notification text, or sensitive
+unit values. Each entry carries a SHA-256 hash chain for crash-evident integrity
+(defence \textbf{not} claimed against A6).
+
+\subsection{Implementation}\label{sec:impl}
+
+The reference implementation is a standard-library-only Python package
+(\texttt{screenshare\_mediator}) requiring Python $\geq$~3.10. No
+machine-learning dependencies, network access, external APIs, or third-party
+packages are required. All transforms are deterministic given the same fixture
+and policy configuration, making runs bit-exact reproducible from the synthetic
+fixture set.
+
+\paragraph{Module inventory.}
+Table~\ref{tab:modules} lists the eight Python modules.
+
+\begin{table}[ht]
+\caption{Module inventory of the reference implementation.}
+\label{tab:modules}
+\begin{tabular}{@{}lp{8.8cm}@{}}
+\toprule
+Module & Role \\
+\midrule
+\texttt{models.py}
+  & Typed dataclasses (\texttt{CapturedSession}, \texttt{PolicyDecision},
+    \texttt{MediatedContext}, \texttt{AuditEvent}, \texttt{GuardedOutput})
+    shared across module boundaries. \\[3pt]
+\texttt{capture.py}
+  & Synthetic capture adapter; normalises a JSON fixture into a
+    \texttt{CapturedSession} (TB1). \\[3pt]
+\texttt{policy.py}
+  & Consent\,/\,policy engine; maps \texttt{CapturedSession} to
+    \texttt{PolicyDecision} using
+    \texttt{consent\_redaction\_policy.json}. \\[3pt]
+\texttt{redaction.py}
+  & Six-family deterministic redaction engine; transforms raw context at
+    TB2. \\[3pt]
+\texttt{memory.py}
+  & Mode-A session memory gate; enforces context exclusion and
+    memory-write suppression at TB3. \\[3pt]
+\texttt{output\_guard.py}
+  & Rule-based output guard with isolated policy-only context (TB4). \\[3pt]
+\texttt{audit.py}
+  & Append-only SHA-256-chained audit logger (TA7). \\[3pt]
+\texttt{runtime.py}
+  & Baseline and guarded path composition; the two-path comparison
+    interface used by the benchmark. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Policy configuration.}
+Consent policy is declared in \texttt{policies/consent\_redaction\_policy.json},
+which maps scenario-class patterns to allowed action sets. The policy file is
+the single configuration point; the policy engine reads it at startup and
+applies it without code changes.
+
+\paragraph{Synthetic fixture set.}
+The fixture set covers eleven scenario classes. Each fixture is a JSON object
+containing: scenario identifier, scenario class, synthetic screen text,
+synthetic speech text, synthetic notification text (when applicable),
+window-event metadata, annotated sensitive units ($U_i$), annotated benign
+task-critical units ($Q_i$), expected policy action ($A_i$), and binary
+task-success rubric answer ($y_i$). No fixture contains real screen captures,
+real personal data, or real credentials.
+
+\paragraph{Test suite.}
+The test suite contains 29 tests: fixture-set coverage (6 tests), per-module
+behaviour including all four adversarial-evasion paths (14 tests), benchmark
+metric helpers (3 tests), audit hash-chain verification (4 tests), and a TB3
+trust-boundary regression confirming context-excluded content does not appear in
+the model context for the exclusion turn (1 test). All 29 pass on Python~3.14
+and on Python~3.10.
+
+\subsection{Design limits}\label{sec:designlimits}
+
+\begin{itemize}
+  \item Does not defend against A6, A7, or A8 (compromised infrastructure,
+        supply chain, OS).
+  \item Does not provide formal privacy guarantees.
+  \item Does not perform model-based redaction; extended category coverage
+        requires a redactor extension.
+  \item Does not generalise beyond the seven modules without explicit
+        threat-model re-review.
+\end{itemize}
+
+%%%──────────────────────────────────────────────────────────────────────
+\section{Evaluation}\label{sec:eval}
+%%%──────────────────────────────────────────────────────────────────────
+
+\subsection{Metrics}\label{sec:metrics}
+
+We define four primary metrics over a synthetic fixture set
+$\mathcal{D} = \{x_1, \ldots, x_n\}$ with $n = 11$.
+For each fixture, $U_i$ is the set of annotated synthetic sensitive units that
+must not appear on prohibited surfaces (model context, assistant output, retained
+memory, audit content beyond decision metadata), and $Q_i$ is the set of
+annotated benign task-critical units that should remain available for task
+completion.
+
+\paragraph{Sensitive exposure rate (SER).}
+For path $p \in \{B,\,G\}$ (baseline\,/\,guarded):
+\begin{equation}
+  \text{SER}(p) \;=\;
+    \frac{\displaystyle\sum_{i}\sum_{u \in U_i} \text{exposed}(u,\,x_i,\,p)}
+         {\displaystyle\sum_{i} |U_i|}
+\end{equation}
+where $\text{exposed}(u,\,x_i,\,p) = 1$ if a normalised match for $u$ appears
+on a prohibited surface in path~$p$. Lower $\text{SER}(G)$ is better. Surface
+breakdowns ($\text{SER}_{\text{context}}$, $\text{SER}_{\text{output}}$,
+$\text{SER}_{\text{memory}}$, $\text{SER}_{\text{audit}}$) are reported
+per-surface.
+
+\paragraph{False block rate (FBR).}
+Fraction of benign task-critical units $q \in Q_i$ that the guarded path blocks
+or replaces in a way that prevents task completion.
+
+\paragraph{Latency overhead (LOH).}
+Wall-clock guarded-path runtime minus baseline runtime, on the same fixture,
+under the same harness.
+
+\paragraph{Task completion (TC).}
+Rubric-based pass\,/\,fail per fixture, evaluated on assistant output.
+
+\subsection{Benchmark composition}\label{sec:benchmark}
+
+Eleven synthetic fixtures spanning seven non-adversarial classes (terminal
+secret, chat notification, browser PII, spoken sensitive fragment, prompt
+injection on screen, fast window switching, small-font zoomed UI) and three
+adversarial-evasion classes (Unicode-homoglyph credential, split PII,
+mixed-sensitivity scene). All fixtures are invented; no real screen captures,
+real personal data, or production telemetry. Construction details and provenance
+are in \texttt{src/data/synthetic/README.md} and
+\texttt{supplement/artifact\_checklist.md}.
+
+\subsection{Per-module ablation}\label{sec:ablation}
+
+We run six variants on the eleven fixtures: \texttt{baseline} (no mediation),
+\texttt{policy\_only}, \texttt{redaction\_only}, \texttt{memory\_gate\_only},
+\texttt{output\_guard\_only}, \texttt{audit\_log\_only}, and \texttt{full\_guard}
+(all modules enabled). Results from
+\texttt{eval/results/per\_module\_ablation.csv} are shown in
+Table~\ref{tab:ablation}.
+
+\begin{table}[ht]
+\caption{Per-module ablation results on eleven synthetic fixtures.
+``Exp.\ rate'' = expected-outcome rate (fraction of fixtures reaching the
+annotated expected outcome).}
+\label{tab:ablation}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llrrrrrrr@{}}
+\toprule
+Variant & Modules & Exp.\ rate & \multicolumn{2}{c}{Exposures} & Out.\ & Audit & Mem.\ \\
+        &         &            & Ctx. & Out. & blocks & events & writes \\
+\midrule
+\texttt{baseline}
+  & none            & \textbf{0.000}~(0/11) & 10 & 10 &  0 &  0 &  0 \\
+\texttt{policy\_only}
+  & policy          & 0.000~(0/11)          & 10 &  8 &  0 &  0 &  0 \\
+\texttt{redaction\_only}
+  & policy+redact   & 0.909~(10/11)         &  1 &  1 &  0 &  0 &  0 \\
+\texttt{memory\_gate\_only}
+  & policy+memory   & 0.091~(1/11)          &  9 &  7 &  0 &  0 & 10 \\
+\texttt{output\_guard\_only}
+  & policy+guard    & 0.000~(0/11)          & 10 &  0 & 10 &  0 &  0 \\
+\texttt{audit\_log\_only}
+  & policy+audit    & 0.000~(0/11)          & 10 &  8 &  0 & 11 &  0 \\
+\texttt{full\_guard}
+  & all             & \textbf{1.000~(11/11)}&  0 &  0 &  5 & 23 & 10 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\paragraph{Reading the table.}
+Redaction alone removes ten of eleven sensitive units from both context and
+output; the missed fixture is \texttt{spoken\_sensitive\_fragment}, whose
+expected policy action is \texttt{block\_memory\_write}---a retention control
+that the redactor does not implement. Output guard alone blocks all assistant
+outputs that would have leaked, but does so by blocking \textit{all} responses
+on the affected fixtures---acceptable as a last-resort fallback, but not a
+substitute for upstream filtering. Memory gate alone prevents persistence but
+lets the model see and respond with sensitive content. The full guard
+composition reaches the expected outcome on every fixture in the benchmark,
+with no context exposures, no output exposures, five precise output blocks
+(used only when upstream redaction was insufficient), an audit trail of 23
+decision events, and ten memory-gate writes recorded by the audit logger.
+
+\subsection{Per-fixture results and adversarial-evasion
+            analysis}\label{sec:per-fixture}
+
+The three adversarial-evasion fixtures are \texttt{homoglyph\_credential},
+\texttt{split\_pii}, and \texttt{encoded\_screen\_instruction}. Results from
+\texttt{eval/results/per\_fixture\_ablation.csv} are summarised in
+Table~\ref{tab:evasion}.
+
+\begin{table}[ht]
+\caption{Adversarial-evasion fixture outcomes.}
+\label{tab:evasion}
+\begin{tabular}{@{}p{2.8cm}llll@{}}
+\toprule
+Fixture & redact.-only & full-guard & Out.\ blk & Primary mechanism \\
+\midrule
+\texttt{homoglyph\_} \texttt{credential}
+  & met & met & No
+  & Unicode normalisation before pattern check removes the homoglyph
+    substitution; output guard not invoked. \\[4pt]
+\texttt{split\_pii}
+  & met & met & Yes
+  & Whitespace\,/\,separator normalisation catches split digits;
+    output guard fires as defence-in-depth. \\[4pt]
+\texttt{encoded\_screen\_} \texttt{instruction}
+  & met & met & Yes
+  & Redactor strips encoding marker; output guard additionally blocks
+    as defence-in-depth. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All three adversarial-evasion fixtures are handled by \texttt{full\_guard}.
+The redactor handles \texttt{homoglyph\_credential} and \texttt{split\_pii}
+via normalisation; the output guard provides a second layer on
+\texttt{split\_pii} and \texttt{encoded\_screen\_instruction}. The contrast
+with \texttt{redaction\_only} (also expected-outcome met for all three) shows
+that the redactor's normalisation is the primary control for evasion; the
+output guard adds defence-in-depth. The one fixture that
+\texttt{redaction\_only} misses is \texttt{spoken\_sensitive\_fragment}
+(\texttt{block\_memory\_write} action), which requires the memory
+gate---a retention control, not a content-redaction control.
+
+\subsection{Latency overhead}\label{sec:latency}
+
+Table~\ref{tab:latency} shows wall-clock results from
+\texttt{eval/results/baseline\_vs\_guarded.csv} (200 paired iterations per
+fixture).
+
+\begin{table}[ht]
+\caption{Latency overhead (200 paired iterations per fixture; values in
+         microseconds, $\mu$s).}
+\label{tab:latency}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Fixture & Baseline med. & Guarded med. & Guarded p99 & Overhead ratio \\
+\midrule
+\texttt{terminal\_secret}             & 2.2 & 32.8 &  40.0 & 13.9$\times$ \\
+\texttt{chat\_notification}           & 2.2 & 55.5 &  73.1 & 24.6$\times$ \\
+\texttt{browser\_pii}                 & 2.1 & 35.4 &  46.0 & 15.7$\times$ \\
+\texttt{spoken\_sensitive\_fragment}  & 2.0 & 35.9 &  85.9 & 17.0$\times$ \\
+\texttt{prompt\_injection\_on\_screen}& 2.1 & 32.6 &  44.8 & 14.6$\times$ \\
+\texttt{fast\_window\_switching}      & 2.4 & 32.8 &  43.3 & 12.8$\times$ \\
+\texttt{small\_font\_zoomed\_ui}      & 2.1 & 28.8 &  99.8 & 12.5$\times$ \\
+\texttt{homoglyph\_credential}        & 2.1 & 27.3 &  28.1 & 11.9$\times$ \\
+\texttt{split\_pii}                   & 2.1 & 28.6 &  37.1 & 12.5$\times$ \\
+\texttt{mixed\_sensitivity}           & 2.1 & 56.8 &  81.3 & 25.5$\times$ \\
+\texttt{encoded\_screen\_instruction} & 2.1 & 71.1 & 103.6 & 32.3$\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The median guarded latency across all fixtures is approximately 32.8\,$\mu$s
+(range 27.3--71.1\,$\mu$s). The p99 reaches 103.6\,$\mu$s for
+\texttt{encoded\_screen\_instruction}, which requires the most complex
+output-guard evaluation. The baseline median is approximately 2.2\,$\mu$s. The
+overhead ratio ranges from 11.9$\times$ to 32.3$\times$, reflecting that the
+mediation layer dominates harness time relative to the no-op baseline, but the
+absolute overhead remains sub-millisecond in every case.
+
+These figures reflect a single-process Python evaluation harness on synthetic
+fixtures. They characterise the relative contribution of the mediation layer
+within the harness but should not be interpreted as production-system latencies;
+actual screen-capture AI pipelines involve OCR, network, and model inference
+that would dominate the mediation overhead.
+
+\subsection{Threats to validity}\label{sec:threats}
+
+\begin{itemize}
+  \item \textbf{Synthetic-only.} All fixtures are invented. Production-scale
+        generalisation is not claimed.
+  \item \textbf{Eleven fixtures.} Coverage is intentionally bounded;
+        adversarial-evasion classes beyond the three studied are not
+        characterised.
+  \item \textbf{English-only synthetic content.} Multi-lingual evasion is not
+        studied.
+  \item \textbf{Single-system evaluation.} No comparison to prior
+        runtime-mediation systems because, to our knowledge, none with the same
+        control-surface decomposition exists. The closest prior systems operate
+        at the OS permission layer (TaintDroid, Android permission model) or
+        session-level controls (Microsoft Recall, Zoom AI Companion), not at the
+        per-frame, per-content-category runtime level described here.
+\end{itemize}
+
+%%%──────────────────────────────────────────────────────────────────────
+\section{Discussion}\label{sec:discussion}
+%%%──────────────────────────────────────────────────────────────────────
+
+The ablation supports a small but specific design claim: \textbf{no single
+module is sufficient, and the four mediation modules (redaction, memory gate,
+output guard, audit logger) compose under the policy engine to achieve full
+expected-outcome on the synthetic benchmark.}
+The result is consistent with a defence-in-depth architecture: redaction handles
+the common path, output guard catches what redaction misses, memory gate prevents
+cross-turn leakage, and audit logger preserves decision provenance.
+
+\paragraph{Deployment considerations.}
+The seven-module decomposition assumes a controlled assistant runtime where the
+developer controls capture, redaction, model invocation, memory, and output.
+SaaS assistants without this control cannot adopt the design as-is. Hybrid
+deployments (browser extension + assistant API) would require redaction at the
+extension boundary and trust-model adjustments.
+
+\paragraph{What we did not measure.}
+Real-user task-completion rates, latency on production captures, additional
+adversarial classes beyond the three studied, multi-lingual performance.
+
+%%%──────────────────────────────────────────────────────────────────────
+\section{Limitations}\label{sec:limitations}
+%%%──────────────────────────────────────────────────────────────────────
+
+\begin{itemize}
+  \item Synthetic benchmark only; no real-user evaluation.
+  \item Eleven fixtures; adversarial classes beyond the three studied are
+        uncharacterised.
+  \item Pattern-based redactor; additional content categories require a
+        redactor extension.
+  \item A6, A7, and A8 explicitly excluded from the threat model.
+  \item No formal privacy guarantee.
+\end{itemize}
+
+%%%──────────────────────────────────────────────────────────────────────
+\section{Ethics}\label{sec:ethics}
+%%%──────────────────────────────────────────────────────────────────────
+
+All evaluation data is synthetic. No real screen captures, real personal data,
+real audio recordings, or real notification content was collected, used, or
+stored. No human subjects were involved. IRB approval is not applicable. The
+synthetic fixture set is documented under \texttt{src/data/synthetic/README.md}.
+
+The design does not enable surveillance: it reduces, not increases, the
+assistant's access to sensitive content. The design does not weaken existing
+privacy controls: it composes with platform-level controls and operates
+strictly inside the assistant runtime.
+
+%%%──────────────────────────────────────────────────────────────────────
+\section{Conclusion}\label{sec:conclusion}
+%%%──────────────────────────────────────────────────────────────────────
+
+We presented a runtime mediation layer for live screen-share AI assistants,
+decomposed into seven modules along three control surfaces (observe, retain,
+say) and motivated by an explicit threat model.
+A per-module ablation on a synthetic benchmark of eleven scenario classes shows
+that the composed full guard achieves expected outcomes on every fixture while
+the unmediated baseline reaches it on none, and that no single module is
+individually sufficient.
+We make bounded claims tied to a synthetic benchmark and explicitly exclude
+formal privacy, host compromise, and supply-chain threats from our scope.
+
+%%%──────────────────────────────────────────────────────────────────────
+%%% Bibliography
+%%%──────────────────────────────────────────────────────────────────────
+
+\bibliographystyle{sn-mathphys-num}
+\bibliography{../references}
+
+\end{document}

@@ -2,13 +2,13 @@
 
 > Anonymous draft for double/single-blind review. Do not include author identifiers. De-anonymization happens at submission time per the venue's policy.
 >
-> **Status:** Draft 2, 2026-05-02. NEE-241 source-check complete: Section 3 (Related Work) written with 16 verified citations; §5.3 ablation error corrected (spoken_sensitive_fragment, not homoglyph_credential, is the fixture missed by redaction_only); §5.4 adversarial-evasion analysis filled from per_fixture_ablation.csv; §5.5 latency table filled from baseline_vs_guarded.csv; §5.6 no-prior-system claim confirmed; references.bib committed. All placeholders resolved.
+> **Status:** Draft 3, 2026-05-03. NEE-252 prose pass expands Introduction, Related Work, Design, Discussion, and Limitations toward the 6,000-word bar. Related Work uses checked citation keys from `references.bib`; empirical claims remain tied to committed files under `eval/results/`.
 
 ---
 
 ## Abstract
 
-Live screen-share AI assistants can observe raw screen and speech streams, but users lack fine-grained runtime control over what the assistant may see, retain, and say. Static chatbot and privacy controls do not close this gap: the sensitive content is in the live capture, not in the prompt, and the assistant needs fast-changing interface context to respond at all. We design and evaluate a runtime mediation layer that enforces consent, redaction, memory controls, and output safeguards for live multimodal assistance, sitting between capture adapters, session memory, and assistant responses. We evaluate the layer on synthetic screen-share scenarios covering secrets, personal data, sensitive speech fragments, screen-visible prompt injection, dense or zoomed interfaces, fast window switching, and three adversarial-evasion classes (Unicode-homoglyph credentials, split or spaced personal-data digits, and role-play / chain-prompt screen instructions), measuring sensitive exposure, false blocks, latency overhead, and task completion against an unmediated prototype baseline. We contribute a design and evaluation of runtime control mechanisms for screen-share assistants, with claims bounded to synthetic evidence.
+Live screen-share AI assistants can observe raw screen and speech streams, but users lack fine-grained runtime control over what the assistant may see, retain, and say. Static chatbot and privacy controls do not close this gap: the sensitive content is in the live capture, not in the prompt, and the assistant needs fast-changing interface context to respond at all. We design and evaluate a runtime mediation layer that enforces consent, redaction, memory controls, and output safeguards for live multimodal assistance, sitting between capture adapters, session memory, and assistant responses. We evaluate the layer on synthetic screen-share scenarios covering secrets, personal data, sensitive speech fragments, screen-visible prompt injection, dense or zoomed interfaces, fast window switching, and three adversarial-evasion classes (Unicode-homoglyph credentials, split or spaced personal-data digits, and role-play / chain-prompt screen instructions), measuring sensitive exposure, false blocks, latency overhead, and task completion against an unmediated prototype baseline. We contribute a bounded design and evaluation of runtime control mechanisms for screen-share assistants; claims remain limited to deterministic synthetic evidence.
 
 **Keywords.** Privacy, screen-share assistants, runtime mediation, consent, redaction, multimodal AI, prompt injection, evaluation.
 
@@ -16,22 +16,24 @@ Live screen-share AI assistants can observe raw screen and speech streams, but u
 
 ## 1. Introduction
 
-Multimodal AI assistants are increasingly deployed inside live screen-share sessions, where they observe the same surface a human is explaining: terminals with credentials, browsers with personal data, chat overlays with personal notifications, and spoken fragments containing sensitive information. This deployment pattern is fundamentally different from the chatbot setting: the sensitive content is not in the user's prompt; it is in the live capture stream itself.
+Live screen-share AI assistants collapse two interaction modes that used to be separate. In one mode, a user deliberately sends a prompt to a chatbot. In the other, a collaborator shares a live desktop, browser, terminal, or meeting window with other people. A screen-share assistant sees the second mode through the interface of the first: the assistant receives a stream of visual and speech-derived context, then produces text as if the user had intentionally provided every item in that stream. That assumption is fragile. A terminal may contain an API token beside the command the user wants explained. A browser may show a customer identifier next to a workflow step. A chat overlay may appear for half a second while the user is asking about an unrelated design artifact. A meeting participant may display instructions that are meaningful to humans but adversarial to an AI assistant.
 
-Static privacy settings — blanket "do not log," "do not share with vendors" toggles — address a different problem. They cannot answer questions like *"this terminal window is okay but the password manager is not,"* *"summarize what is on screen but never name the customer,"* or *"redact this email address from your reply but use it to find the right ticket."* These questions are about **runtime** mediation between capture and assistant: deciding, frame-by-frame and utterance-by-utterance, what the model sees, what gets retained, and what comes out.
+The resulting gap is not just a data-retention setting. Session-level controls such as whether an assistant is enabled, whether a transcript is retained, or whether vendor training is allowed operate before or after the live interaction. They do not answer the runtime questions that arise after capture begins: should this frame enter the model context, should this utterance be written to memory, and should the assistant repeat or imply a sensitive item in its response? Existing permission systems similarly decide whether an application may access a resource, but once access is granted they rarely mediate each content category inside the stream. For live screen-share assistance, the policy decision must be closer to the assistant's context-construction boundary.
 
-This paper presents a runtime mediation layer for live screen-share AI assistants. The layer interposes seven cooperating modules between raw capture and assistant response — screen capture adapter, speech event adapter, redaction engine, consent/policy engine, session memory gate, output guard, and audit logger — with three control surfaces: **observe**, **retain**, and **say**. We design the layer to satisfy a stated adversary model (Section 2), describe per-module enforcement and trust boundaries (Section 4), and evaluate per-module contributions on a synthetic benchmark of eleven scenario classes including three adversarial-evasion classes (Section 5).
+We frame this paper around three control surfaces. The **observe** surface governs what captured screen, notification, and speech content may enter assistant context. The **retain** surface governs what may persist beyond the immediate turn. The **say** surface governs what the assistant may reveal in its response, including direct repetition and configured indirect references to gated content. These surfaces are intentionally separated. Redacting an input token does not guarantee that no memory write occurred; suppressing a memory write does not guarantee that the current response is clean; blocking a response does not prove that the model never saw the content. A runtime mediation layer must therefore coordinate input, memory, output, and audit behavior rather than treating privacy as a single switch.
 
-Our contributions:
+We present PerceptFence, a synthetic prototype of such a runtime mediation layer. PerceptFence interposes seven cooperating modules between raw capture and assistant response: a screen capture adapter, a speech event adapter, a consent/policy engine, a deterministic redaction engine, a session memory gate, an output guard, and an audit logger. The prototype does not modify the underlying language model or the host operating system. Instead, it treats captured screen and speech content as untrusted input, constructs assistant context only after policy and redaction decisions, prevents configured content from being written to session memory, and filters assistant output using policy-only guard context.
 
-- **A consent-aware runtime mediation design** for screen-share AI assistants, decomposed into seven modules with explicit per-module trust assumptions and enforces-vs-does-not-enforce boundaries.
-- **A synthetic evaluation benchmark** of eleven scenario classes covering credentials, personal data, sensitive speech, prompt injection on-screen, dense/zoomed interfaces, fast window switching, and three adversarial-evasion classes (Unicode-homoglyph credentials, split/spaced personal-data digits, role-play / chain-prompt screen instructions).
-- **A per-module ablation study** isolating which mediation module removes or blocks each annotated risk class, including a measurement that the full guard achieves the expected outcome on every fixture (11/11) while the unmediated baseline reaches it on none (0/11).
-- **A claim-to-metric audit framework** that ties every empirical claim in the evaluation to an annotated metric definition, preventing the kind of unmeasured "privacy" claims that have weakened prior work in this space.
+The evaluation is deliberately bounded. We use eleven invented screen-share scenario classes covering credentials, personal data, notifications, sensitive speech fragments, screen-visible prompt injection, fast window switching, dense or zoomed interfaces, and three configured adversarial-evasion families: Unicode-homoglyph credentials, split or spaced personal-data digits, and encoded or chained screen instructions. Against an unmediated baseline, the composed guard achieves the expected outcome on all eleven fixtures while the baseline achieves it on none. The mean sensitive exposure rate in the committed benchmark is 0.909 for the baseline and 0.000 for the guarded path; the mean false block rate rises from 0.000 to 0.182. These numbers are evidence about the fixture set and implementation path only. They are not evidence about real screen-share distributions, human understanding, legal consent, deployment latency, or defenses against compromised hosts or models.
 
-We make no claims about formal privacy preservation, differential privacy guarantees, defense against compromised hosts or models, or completeness against unknown adversarial-evasion classes. The contribution is bounded: a design and evaluation of runtime control mechanisms on a synthetic benchmark.
+This paper makes four contributions:
 
----
+- **A runtime-mediation framing** for live screen-share AI assistants, organized around observe, retain, and say control surfaces.
+- **A seven-module design** that separates capture, policy, redaction, memory gating, output guarding, and audit logging while stating the trust boundary for each module.
+- **A synthetic benchmark and ablation** that measure sensitive exposure, false blocks, task-success proxy, audit coverage, and latency on eleven invented scenario classes.
+- **A claim-to-metric discipline** that keeps the paper's empirical claims tied to deterministic artifacts under `eval/results/` and labels unsupported user-study, deployment, and formal guarantees as out of scope.
+
+The paper is structured as follows. Section 2 states the threat model and claim guardrails. Section 3 positions PerceptFence relative to runtime permissions, contextual-integrity work, privacy-oriented assistants, deployed screen-capture assistants, prompt-injection attacks, and agent safeguards. Section 4 describes the design and implementation. Section 5 reports the synthetic evaluation. Sections 6 and 7 discuss implications, design alternatives, and limitations.
 
 ## 2. Threat Model
 
@@ -63,99 +65,107 @@ Every empirical claim in this paper maps to a metric defined in Section 5.1 and 
 ## 3. Related Work
 
 **Runtime capture permissions.**
-Mobile operating systems use API-level permissions to control which applications may access the camera, microphone, or screen-capture surface.
-Felt et al. characterize Android's permission model and find that most users grant permissions without understanding their scope [@felt2012permissions].
-A companion study shows that applications routinely request permissions they do not use, creating unnecessary exposure [@felt2011android].
-At the system layer, TaintDroid tracks the flow of privacy-sensitive data through the Android runtime, demonstrating that third-party applications frequently transmit sensitive user data to advertising networks without user awareness [@enck2014taintdroid].
-These system-level designs gate access to a capture API but do not control what happens to the content of the captured stream after access is granted.
-PerceptFence operates at the content layer rather than the access layer: it interposes between a granted capture stream and an AI assistant's context-construction step.
+Mobile and desktop platforms usually begin with an access-control question: may this application use a camera, microphone, screen-capture surface, clipboard, or file? Felt et al. show that Android permissions were difficult for users to interpret and that many applications requested permissions whose purpose was unclear to the user [@felt2012permissions]. Their companion analysis of Android applications found over-requesting and permission use that exceeded what application descriptions made salient [@felt2011android]. TaintDroid moves from permission prompts to runtime information-flow tracking, following sensitive data through the Android runtime and showing how third-party applications can transmit such data after access has been granted [@enck2014taintdroid].
+
+PerceptFence shares the runtime concern but changes the unit of control. Permission systems and information-flow monitors reason about application access and data propagation. A screen-share assistant additionally needs a content-level boundary between a granted capture stream and an assistant's context window. The question is not only whether capture is allowed; it is whether a particular credential, notification, utterance, or screen-visible instruction should be observed, retained, or repeated during an active session.
 
 **Privacy norms and contextual integrity.**
-Nissenbaum frames appropriate information flow in terms of contextual integrity: information should flow in ways consistent with the norms of the context in which it was originally disclosed [@nissenbaum2004privacy].
-Apthorpe et al. apply contextual integrity to smart-home IoT devices, showing that users hold nuanced norms about which data a home device may forward to third-party services, conditioned on the recipient and stated purpose [@apthorpe2018smart].
-Shvartzshnaider and Duddu extend this framework to large language models, measuring deviations between the information-flow choices made by LLMs and contextually appropriate expectations, and proposing an auditing metric grounded in contextual integrity theory [@shvartzshnaider2026privacy].
-The consent and policy engine in PerceptFence enforces a simplified contextual boundary by content type: it blocks sensitive screen and speech content from entering the assistant's context unless the active session policy permits that content category.
+Nissenbaum's contextual-integrity theory argues that information-flow appropriateness depends on context, actors, attributes, and transmission principles rather than on a single universal sensitivity label [@nissenbaum2004privacy]. Apthorpe et al. operationalize this view for smart-home IoT devices, showing that users distinguish among data types, recipients, and purposes when evaluating whether a device's information flow is acceptable [@apthorpe2018smart]. Recent language-model work applies related ideas to model behavior, including contextual-integrity audits of how language models judge the appropriateness of information flows [@shvartzshnaider2026privacy].
+
+PerceptFence adopts a narrower engineering approximation of this literature. It does not model the full social context of information flow, nor does it claim that a session policy equals informed human consent. Instead, it uses content categories, modality, window state, and session policy as enforceable runtime inputs. This is a simplification, but it gives the prototype a measurable boundary: the policy engine must convert contextual metadata into one of a small set of actions before content reaches the assistant.
 
 **Privacy-aware AI assistants.**
-Xu et al. study user and expert expectations of AI-powered privacy assistants that automate privacy decisions on behalf of users, identifying factors that influence acceptability, including transparency of information sources and regulatory context [@xu2025acceptability].
-Danry et al. build a gaze-aware multimodal assistant that uses egocentric video to infer where a user is struggling during a task, raising questions about what such an assistant is permitted to observe and how that observation boundary should be defined [@danry2026gaze].
-These systems address AI assistant design and user-facing controls but do not impose runtime content-level filtering on a continuously changing multimodal stream.
-PerceptFence contributes a mediation layer targeting live screen-share input rather than post-hoc user control or assistant behavior calibration.
+AI assistants that help users manage privacy choices raise the question of when automation is acceptable and what information sources such systems may use. Xu et al. study perceptions of AI-powered privacy assistants among experts and users, emphasizing transparency, regulatory context, and the social acceptability of automated privacy decisions [@xu2025acceptability]. Danry et al. explore a gaze-aware multimodal assistant that interprets user state from egocentric video, illustrating how richer multimodal context can improve assistance while expanding what the assistant observes [@danry2026gaze].
+
+PerceptFence is complementary to these assistant-design questions. It does not decide a user's privacy preferences or infer cognitive state. It assumes a session policy already exists and asks how an assistant runtime can enforce that policy while handling live capture. The difference matters for evaluation: PerceptFence can measure synthetic exposure and blocking behavior, but it cannot claim that users understand the policy interface or prefer the tradeoff without a separate study.
 
 **Screen-capture privacy in deployed systems.**
-Microsoft Recall captures a desktop screenshot every few seconds and uses on-device LLMs to provide a retrievable memory layer; early deployments did not filter sensitive content from the snapshot store, and subsequent versions added opt-in filtering for recognized credential patterns after significant public and security-research scrutiny [@microsoft2024recall].
-Zoom AI Companion provides in-meeting AI assistance including transcription and summaries; its privacy documentation describes zero-data-retention options and per-account toggle controls, but these operate at the session level rather than at the granularity of what the assistant may observe within an active session [@zoom2024ai].
-Neither system exposes per-content-category runtime controls during an active session.
-PerceptFence targets this gap: it mediates at the frame and utterance level rather than only at session setup time.
+Deployed screen and meeting assistants show why runtime mediation is becoming practical rather than speculative. Microsoft Recall stores snapshots of desktop activity and now documents controls for filtering apps, websites, and sensitive information in Recall snapshots, including a sensitive-information filter enabled by default in the current documented experience [@microsoft2024recall]. Zoom AI Companion documentation describes account and feature controls, third-party zero-data-retention arrangements, and privacy/security handling for meeting-derived AI features [@zoom2024ai]. These systems are important reference points because they make screen and meeting content available to AI workflows at product scale.
+
+The gap is granularity. Product controls can filter selected apps, websites, meeting features, or categories of sensitive information, but PerceptFence studies the assistant-runtime boundary itself: the transition from captured content to context, memory, and response. The prototype therefore reports per-fixture context, output, memory, and audit exposure rather than only whether a product-level setting is enabled.
 
 **Prompt injection attacks.**
-Screen-visible content introduces a direct prompt injection surface when an AI assistant observes and processes text displayed on screen.
-Greshake et al. systematize indirect prompt injection attacks in LLM-integrated applications, showing that attacker-controlled content placed in retrieved data can override application instructions without any direct user interaction [@greshake2023indirect].
-Liu et al. extend this analysis to black-box attacks on commercial applications, reporting high success rates against production LLM integrations and proposing a taxonomy of injection techniques [@liu2023prompt].
-Screen-share sessions are a particularly direct injection surface because attacker-controlled text is visually displayed and the assistant observes the display without intermediation; the synthetic benchmark includes prompt-injection-on-screen and encoded-screen-instruction scenarios covering this threat.
+Screen-visible text creates an indirect prompt-injection channel. Greshake et al. show that attacker-controlled content in external data can compromise LLM-integrated applications even when the user never types the malicious instruction directly [@greshake2023indirect]. Liu et al. analyze prompt-injection attacks against LLM-integrated applications and organize attack patterns that exploit the application's inability to separate trusted instructions from untrusted content [@liu2023prompt]. In screen-share settings, the untrusted content may simply be visible on the shared display.
+
+PerceptFence treats screen text as data, not instruction, unless the policy engine explicitly allows it to become task context. The synthetic benchmark includes `prompt_injection_on_screen` and `encoded_screen_instruction` fixtures, but those fixtures only test configured classes of displayed instruction handling. They do not establish broad protection against all prompt-injection techniques.
 
 **Defenses against prompt injection and agent safeguards.**
-StruQ separates instructions and data into structured channels, fine-tuning the LLM to follow only the designated instruction channel, reducing injection success rates substantially on the evaluated benchmark [@chen2025struq].
-SecAlign uses preference optimization to train an LLM to prefer secure outputs over injection-compliant outputs, achieving injection success rates below ten percent against a range of attacks including ones not seen during training [@chen2025secalign].
-Yang et al. demonstrate that injected content written into an agent's long-term memory can persist across sessions and trigger unauthorized tool actions in future sessions [@yang2026zombie]; this result motivates PerceptFence's memory gate, which prevents sensitive content from being written to session memory under configurable policy.
-Chen and Cong propose AgentGuard, which uses the agent orchestrator itself to enumerate unsafe tool-use workflows and generate safety constraints that can be validated before deployment [@chen2025agentguard].
-These defenses operate at the model fine-tuning or orchestration level; PerceptFence operates at the input and output mediation layer without modifying the underlying model, making it applicable to any assistant model but bounded by the limits of rule-based detection, which the system design and evaluation explicitly acknowledge.
+Several recent defenses modify the model, prompt format, or agent orchestration layer. StruQ separates instructions from data using structured queries and trains models to follow instructions from the designated channel rather than from the data channel [@chen2025struq]. SecAlign uses preference optimization to favor policy-aligned responses over injection-compliant responses [@chen2025secalign]. Yang et al. show that injected content can persist through agent memory and influence future behavior [@yang2026zombie], which motivates treating retention as a separate surface rather than a byproduct of input filtering. AgentGuard focuses on evaluating tool-orchestration risks by using the agent orchestrator to surface unsafe workflows and constraints [@chen2025agentguard].
 
----
+PerceptFence operates below those model- and orchestrator-level defenses. It can be combined with structured prompting or tool-policy systems, but it does not depend on model fine-tuning and does not evaluate tool use. Its contribution is the runtime mediation path around the model: filter what enters context, suppress prohibited memory writes, guard what leaves the assistant, and record policy decisions without raw sensitive payloads.
 
 ## 4. Design
 
 The runtime mediation layer is composed of seven modules along three control surfaces:
 
-- **Observe** — what the assistant model is permitted to see (screen capture adapter, speech event adapter, redaction engine, consent/policy engine).
+- **Observe** — what the assistant model is permitted to see (screen capture adapter, speech event adapter, consent/policy engine, redaction engine).
 - **Retain** — what the session memory persists across turns (session memory gate).
 - **Say** — what the assistant is permitted to output (output guard).
 
-The audit logger sits across all three surfaces and records decisions without recording sensitive payload.
+The audit logger sits across all three surfaces and records decisions without recording sensitive payload. The ordering is deliberate: PerceptFence first normalizes capture into an explicit session object, then resolves policy, then transforms context, then handles memory and output. A downstream module may reduce exposure further, but it must not relax a stricter upstream policy.
 
-### 4.1 Screen capture adapter
+### 4.1 Control surface 1 — Observe
 
-Captures display frames and extracts textual content. Output is untrusted text plus structural metadata (window class, region, font size, recency). Does **not** classify content; that is the consent/policy engine's job.
+The observe surface controls what content enters assistant context. It is enforced by the capture adapters, the consent/policy engine, and the redaction engine.
 
-### 4.2 Speech event adapter
+**Screen capture adapter.** The prototype's screen adapter reads synthetic fixture text and metadata rather than a real display. In a deployment, the same module would receive frames or OCR output from a platform capture API. The adapter does not classify content. It emits untrusted text plus structural metadata such as scenario class, region, font size, window stability, recency, and modality. Treating adapter output as untrusted avoids giving screen-visible instructions special authority merely because they appear in the same channel as the task context.
 
-Captures audio events and emits utterance fragments with metadata (speaker role, modality, timestamp). Consent decisions can be per-session, per-modality, per-speaker, or per-content category; we adopt **per-modality with per-content-category overrides** (Section 4.4).
+**Speech event adapter.** The speech adapter emits utterance fragments with modality and timestamp metadata. The current benchmark contains one speech-transcript fixture and does not evaluate full audio/screen alignment. The design nevertheless keeps speech separate from screen text so that future policies can distinguish spoken sensitive fragments from visible credentials or notifications.
 
-### 4.3 Redaction engine
+**Consent/policy engine.** The policy engine is the authoritative decision point for all three control surfaces. It receives adapter metadata and redaction categories, then maps each fixture to a policy action in the configured set: `redact_before_model`, `suppress_notification`, `summarize_without_identifier`, `block_memory_write`, `ignore_screen_instruction`, `require_stable_window`, `increase_ocr_sensitivity`, or `selective_redact`. The engine returns both an action and a reason. This reason is passed to audit logging and to the output guard's policy-only context, but raw sensitive text is not.
 
-Pattern-based and category-based redaction over extracted text and speech fragments. Replaces matched units with stable placeholders (`[REDACTED]`, `[EMAIL]`, `[RECORD]`, `[PERSON]`). The engine is *not* model-based for this prototype to keep the trust boundary tight; we treat the redaction engine as **enforcing reduction, not elimination, of sensitive exposure**.
+**Redaction engine.** The redaction engine transforms extracted text and speech fragments after the policy decision. It replaces matched sensitive units with stable placeholders such as `[REDACTED]`, `[EMAIL]`, `[RECORD]`, and `[PERSON]`. The prototype uses deterministic rules rather than a learned classifier so that every benchmark outcome can be reproduced from fixture annotations and code. Six transform families are configured: Unicode-NFKC normalization and confusable-character remapping for homoglyph evasion; ignore-whitespace digit matching for split or spaced PII; credential-pattern masking; identifier summarization; screen-instruction neutralization; and selective region redaction for mixed-sensitivity frames.
 
-Adversarial evasion is a known limitation:
-- **Unicode homoglyph evasion** (e.g., Cyrillic `а` for Latin `a` in a credential string) — addressed via Unicode normalization before pattern check.
-- **Split/spaced PII** (e.g., `4 1 1 1 - 1 1 1 1 - 1 1 1 1`) — addressed via whitespace and separator normalization with bounded lookback.
-- **Role-play / chain-prompt screen instructions** — flagged by the policy engine as A1/A2 surface, not by the redactor; redaction is content-based, not intent-based.
+**Observe algorithm.** For each captured event *xᵢ*, the adapter emits a `CapturedSession`. The policy engine computes an action *Aᵢ* from scenario metadata, modality, and configured policy. The redaction engine applies the transform family associated with *Aᵢ*, producing a `MediatedContext` containing model context, redaction decisions, and category metadata. If *Aᵢ* is `require_stable_window`, the mediated context withholds unstable content. If *Aᵢ* is `ignore_screen_instruction`, displayed instructions are treated as untrusted data. The invariant is that raw captured content should not be appended to model context before this sequence completes.
 
-### 4.4 Consent / policy engine
+### 4.2 Control surface 2 — Retain
 
-Resolves the active consent profile per frame and per utterance. Inputs: window class, modality, speaker role, content categories detected by the redactor, and the user's session policy. Output: a policy action ∈ {allow, redact, gate-memory, block-output, audit-only}, plus the rationale. The policy engine is the **only** authoritative decision-maker for the three control surfaces.
+The retain surface controls what the assistant may remember across turns. It is enforced by the session memory gate.
 
-Policy downgrade is prevented by a session-startup policy lock: relaxations require an authenticated re-consent step, not a runtime toggle.
+**Session memory gate.** The memory gate receives the mediated context and policy action. Its default behavior is to avoid writing sensitive units to memory. When the policy action is `block_memory_write`, the gate uses context exclusion for the affected turn: it zeros or withholds the model context before model invocation and records the exclusion. This is stricter than conversation-history pruning because pruning can remove data from future turns but cannot undo use of content already placed in the current context window. The cost is utility loss: benign task-critical units in the excluded context are also unavailable for that turn, which appears in the false-block and task-success proxy metrics.
 
-### 4.5 Session memory gate
+**Retain algorithm.** Given `MediatedContext mᵢ` and policy action *Aᵢ*, the gate first checks whether the action forbids retention. If retention is forbidden, it emits an empty memory-write set and, for the strong exclusion path, removes the affected context from the current model input. If retention is allowed, it writes only the mediated representation and never raw sensitive unit values. The audit logger records whether a write was suppressed or allowed. The benchmark's `spoken_sensitive_fragment` fixture exercises this path: redaction alone does not satisfy the expected outcome because the relevant control is memory suppression.
 
-Filters what the assistant's session memory persists across turns. Default: no sensitive units written to memory. The memory gate enforces the **retain** surface even when the redactor has allowed a unit through to the model context (e.g., the assistant needs to *use* a personal email but should not *remember* it across the session).
+### 4.3 Control surface 3 — Say
 
-### 4.6 Output guard
+The say surface controls what the assistant may output. It is enforced by the output guard.
 
-Filters the assistant's response stream before display. Enforces output-side policy actions (block, redact, paraphrase). The output guard is the last line of defense against A4 (assistant output leakage), including indirect references — e.g., the assistant naming a person whose email was redacted upstream.
+**Output guard.** The output guard filters the candidate response before display. It uses an isolated policy-only context containing fixture id, scenario class, policy action, policy reason, and blocked categories. It does not receive the raw or mediated screen text. This separation is important because a guard that shares the same injected content as the assistant can itself be influenced by the malicious instruction it is supposed to constrain.
 
-### 4.7 Audit logger
+The guard applies two deterministic stages. First, it checks for literal sensitive fragments configured for the synthetic session. Second, it checks for configured indirect-reference patterns, such as outputs that acknowledge a credential, secret, identifier, or hidden field even without repeating the literal value. If either stage fires, the guard replaces the output with a policy-coded block or hold message. In isolation, this can be over-conservative: the `output_guard_only` ablation blocks output but does not repair context exposure. In composition, the guard is a backstop after observe and retain controls have already reduced the assistant's exposure.
 
-Append-only log of policy decisions and module actions. Logs decision metadata only — never raw screen text, raw speech, raw notification text, or sensitive unit values. Each entry carries a SHA-256 hash chain for crash-evident integrity (defense **not** claimed against A6).
+**Say algorithm.** Given candidate output *oᵢ* and policy-only context *gᵢ*, the guard evaluates literal-fragment rules, indirect-reference rules, and action-specific hold rules. If a rule matches, it returns a `GuardedOutput` with `allowed=false`, a replacement string, and a reason. Otherwise, it returns the original output. The output decision is then logged without storing the blocked content itself.
 
-### 4.8 What this design does not do
+### 4.4 Audit logger
 
-- It does not defend against A6/A7/A8.
-- It does not provide formal privacy guarantees.
-- It does not perform model-based redaction; extended category coverage requires a redactor extension.
-- It does not generalize beyond the seven modules without explicit threat-model re-review.
+The audit logger records policy decisions and module actions. Logs include fixture id, scenario class, policy action, reason, and event type; they do not include raw screen text, raw speech, raw notification text, or sensitive unit values. Each entry carries a SHA-256 hash chain for crash-evident ordering. This hash chain is not a defense against compromised infrastructure, because an attacker with runtime or storage control can alter the logger or delete data before it is written. Its purpose in the prototype is narrower: make decision provenance inspectable during evaluation without expanding the stored sensitive payload.
 
----
+### 4.5 Implementation
+
+The reference implementation is a standard-library-only Python package (`screenshare_mediator`) requiring Python ≥ 3.10. No machine-learning dependencies, network access, external APIs, or third-party packages are required. All transforms are deterministic given the same fixture and policy configuration, making runs reproducible from the synthetic fixture set.
+
+**Module inventory.**
+
+| Module | Role |
+|---|---|
+| `models.py` | Typed dataclasses (`CapturedSession`, `PolicyDecision`, `MediatedContext`, `AuditEvent`, `GuardedOutput`) shared across module boundaries. |
+| `capture.py` | Synthetic capture adapter; normalizes a JSON fixture into a `CapturedSession` (TB1). |
+| `policy.py` | Consent/policy engine; maps `CapturedSession` to `PolicyDecision` using `consent_redaction_policy.json`. |
+| `redaction.py` | Six-family deterministic redaction engine; transforms raw context at TB2. |
+| `memory.py` | Session memory gate; enforces context exclusion and memory-write suppression at TB3. |
+| `output_guard.py` | Rule-based output guard with isolated policy-only context (TB4). |
+| `audit.py` | Append-only SHA-256-chained audit logger (TA7). |
+| `runtime.py` | Baseline and guarded path composition; the two-path comparison interface used by the benchmark. |
+
+**Policy configuration.** Consent policy is declared in `policies/consent_redaction_policy.json`, which maps scenario-class patterns to allowed action sets. The policy file is the single configuration point; the policy engine reads it at startup and applies it without code changes.
+
+**Synthetic fixture set.** The fixture set covers eleven scenario classes. Each fixture is a JSON object containing: scenario identifier, scenario class, synthetic screen text, synthetic speech text, synthetic notification text when applicable, window-event metadata, annotated sensitive units (*U*ᵢ), annotated benign task-critical units (*Q*ᵢ), expected policy action (*A*ᵢ), and binary task-success rubric answer (*y*ᵢ). No fixture contains real screen captures, real personal data, or real credentials.
+
+**Test suite.** The test suite contains fixture-set coverage tests, per-module behavior tests for adversarial-evasion paths, benchmark metric helpers, audit hash-chain checks, and a TB3 trust-boundary regression confirming context-excluded content does not appear in model context for the exclusion turn. The paper reports only results that can be reproduced from the committed benchmark outputs.
+
+### 4.6 Design limits
+
+The design is intentionally narrow. It does not defend against A6/A7/A8: compromised infrastructure, poisoned model or supply chain, or OS-level compromise. It does not provide formal privacy guarantees. It does not perform model-based redaction. It does not evaluate tool-use escalation, cross-session consent transfer, multi-party legal consent, or real-time stream synchronization. Extending the design beyond the seven modules should trigger a new threat-model review rather than being treated as a straightforward implementation detail.
 
 ## 5. Evaluation
 
@@ -244,48 +254,56 @@ These figures reflect a single-process Python evaluation harness on synthetic fi
 
 ## 6. Discussion
 
-The ablation supports a small but specific design claim: **no single module is sufficient, and the four mediation modules (redaction, memory gate, output guard, audit logger) compose under the policy engine to achieve full expected-outcome on the synthetic benchmark.** The result is consistent with a defense-in-depth architecture: redaction handles the common path, output guard catches what redaction misses, memory gate prevents cross-turn leakage, audit logger preserves decision provenance.
+The ablation supports a small but specific design claim: no single module is sufficient, and the composed mediation path is what achieves the expected outcomes on the synthetic benchmark. Redaction handles most direct sensitive units, the memory gate handles retention-specific cases, the output guard catches literal and configured indirect output violations, and the audit logger provides decision provenance. The policy engine is the point that makes these modules compose: each module receives an action and reason rather than independently guessing what the user intended.
 
-**Deployment considerations.** The seven-module decomposition assumes a controlled assistant runtime where the developer owns capture, redaction, model invocation, memory, and output. SaaS assistants without this control cannot adopt the design as-is. Hybrid deployments (browser extension + assistant API) would require redaction at the extension boundary and trust-model adjustments.
+**Implications for assistant design.** The observe/retain/say split gives assistant builders a way to reason about privacy-relevant behavior without conflating separate failure modes. A system that only filters output may still expose sensitive content to the model. A system that only redacts input may still write sensitive context to memory. A system that only disables retention may still repeat a sensitive unit in the current response. PerceptFence's architecture makes those distinctions explicit and measurable. This supports research packaging because each claim can be mapped to a benchmark surface: context exposure, memory exposure, output exposure, false block rate, task-success proxy, latency, and audit coverage.
 
-**What we did not measure.** Real-user task-completion rates, latency on production captures, additional adversarial classes beyond the three studied, multi-lingual performance.
+**Generalizability.** The benchmark is synthetic, but the design pattern is not tied to the particular tokens in the fixtures. The relevant abstraction is a mediated stream: capture produces untrusted content, policy maps content and context metadata to an action, transforms construct assistant context, memory policy governs retention, and output policy constrains responses. That abstraction can apply to browser copilots, meeting assistants, desktop agents, or remote-support assistants if the developer controls the context-construction path. It applies less directly to closed SaaS assistants where the developer cannot interpose before model invocation or inspect memory writes.
+
+**Design alternatives.** One alternative is platform-level filtering: prevent selected apps, websites, or categories from being captured at all. That approach can reduce exposure before the assistant runtime, but it cannot express cases where the assistant may use part of a frame while withholding another part from memory or output. A second alternative is model-level alignment: train the assistant not to reveal sensitive content. That approach may help output behavior, but it does not by itself create an auditable record of what entered context or memory. A third alternative is post-hoc deletion: allow capture and model use, then remove retained data later. That is insufficient for current-turn output and cannot undo prior model exposure. PerceptFence is closest to a fourth option: runtime mediation at the assistant boundary.
+
+**Costs and tradeoffs.** The main cost is false blocking and task-context loss. The guarded path has a higher mean false block rate than the baseline, and context exclusion can suppress benign task-critical units alongside sensitive units. The second cost is engineering control. A developer must own the capture-to-context path, memory layer, and output-display boundary. The third cost is audit sensitivity: even metadata about policy decisions can reveal that a sensitive event occurred. The prototype handles this by excluding raw sensitive payloads from the log, but a deployment would still need an access-control and retention policy for audit metadata.
+
+**Relationship to C6 evidence.** For EB1A C6 packaging, the manuscript's value is strongest when the paper stays as a bounded scholarly artifact: a clear problem statement, an implemented prototype, a benchmark table, a figure, a source-checked related-work section, and a limitation section that prevents claim inflation. The draft should not be positioned as a deployed product or as evidence of broad user impact. Its current evidence value is a research-output trail: a reproducible artifact and manuscript moving toward external submission.
 
 ---
 
 ## 7. Limitations
 
-- Synthetic benchmark only; no real-user evaluation.
-- Eleven fixtures; adversarial classes beyond the three studied are uncharacterized.
-- Pattern-based redactor; additional content categories require a redactor extension.
-- A6/A7/A8 explicitly excluded from the threat model.
-- No formal privacy guarantee.
+This section states what the benchmark cannot claim.
 
----
+- **Synthetic benchmark only.** All fixtures are invented. They support deterministic regression testing and baseline-versus-guarded comparison, but they do not represent the distribution of real screen-share sessions. The benchmark does not include real screenshots, real notifications, real audio recordings, real personal data, customer data, or organizational data.
+- **Small fixture count.** The benchmark covers eleven scenario classes. This is enough to exercise the configured policy actions and adversarial-evasion families, but it is not coverage evidence for the range of content that can appear in real desktop or meeting environments.
+- **Configured evasion families only.** The adversarial fixtures cover Unicode homoglyph credentials, split or spaced personal-data digits, mixed-sensitivity content, and encoded or chained screen instructions. Other evasion techniques, languages, scripts, image-only secrets, screenshots-within-screenshots, layout attacks, and steganographic output channels are not characterized.
+- **No human-subject evidence.** The paper does not evaluate whether users understand the controls, whether consent prompts cause fatigue, whether the assistant remains helpful during real tasks, or whether teams would adopt the workflow. Task-success rate is a synthetic proxy, not a usability measure.
+- **No deployment latency claim.** The reported latency comes from a single-process Python harness over synthetic fixtures. Real assistants would include capture, OCR, network, model inference, and UI rendering overheads that are not measured here.
+- **Rule-based detector.** The redaction engine is deterministic and inspectable, but it can miss formats outside its configured patterns. Learned detectors may improve recall for some categories, but they would introduce new false-positive, explainability, and evaluation questions.
+- **Threat-model exclusions.** A6/A7/A8 remain outside scope: compromised infrastructure, poisoned model or dependency, and OS-level compromise. Tool-use exfiltration, multi-party consent negotiation, cross-session consent transfer, and legal informed-consent workflows are also outside the current artifact.
+- **Audit metadata risk.** The audit log excludes raw sensitive content, but metadata can still reveal that a sensitive category appeared. The prototype does not define production log access control, retention, deletion, or tamper-resistance.
+
+These limitations are not footnotes to be softened later. They are part of the paper's claim discipline: until additional studies or systems evidence exist, the paper should claim only measured exposure reduction and policy-action behavior on the synthetic fixture set.
 
 ## 8. Ethics
 
 All evaluation data is synthetic. No real screen captures, real personal data, real audio recordings, or real notification content was collected, used, or stored. No human subjects were involved. IRB approval is not applicable. The synthetic fixture set is documented under `src/data/synthetic/README.md`.
 
-The design does not enable surveillance: it reduces, not increases, the assistant's access to sensitive content. The design does not weaken existing privacy controls: it composes with platform-level controls and operates strictly inside the assistant runtime.
+The design is intended to reduce the assistant's access to sensitive content within the mediated runtime path. It composes with platform-level controls and operates inside the assistant runtime, so it should be evaluated as an additional boundary rather than as a replacement for platform policy, organizational review, or user-facing consent design.
 
 ---
 
 ## 9. Conclusion
 
-We presented a runtime mediation layer for live screen-share AI assistants, decomposed into seven modules along three control surfaces (observe, retain, say) and motivated by an explicit threat model. A per-module ablation on a synthetic benchmark of eleven scenario classes shows that the composed full guard achieves expected outcomes on every fixture while the unmediated baseline reaches it on none, and that no single module is individually sufficient. We make bounded claims tied to a synthetic benchmark and explicitly exclude formal privacy, host compromise, and supply-chain threats from our scope.
+We presented a runtime mediation layer for live screen-share AI assistants, decomposed into seven modules along three control surfaces: observe, retain, and say. A per-module ablation on eleven synthetic scenario classes shows that the composed guard achieves expected outcomes on every fixture while the unmediated baseline reaches it on none, and that no single module is individually sufficient. The contribution is a bounded research artifact: a threat model, implementation scaffold, benchmark, and manuscript whose claims are tied to deterministic synthetic evidence and explicitly exclude formal privacy guarantees, host compromise, and supply-chain threats.
 
 ---
 
 ## References
 
-Formatted by ACM-Reference-Format from `references.bib`. See that file for all 16 entries (≤25 cap). Every cite key used in this manuscript resolves in `references.bib`; the provenance table in the file records the verification path for each entry.
+Formatted by ACM-Reference-Format from `references.bib`. See that file for all 16 entries (≤25 cap). Every cite key used in this manuscript resolves in `references.bib`; the provenance comments in that file record the source-check path for each entry.
 
 ---
 
 ## Anonymity and de-anonymization log
 
-This draft is anonymous. Author block, affiliations, acknowledgments, and CITATION.cff de-anonymization happen at submission time and are tracked in NEE-245. Repository link in references is also gated on de-anonymization.
+This draft is anonymous. Author block, affiliations, acknowledgments, and CITATION.cff de-anonymization happen at submission time. Repository links in references are also gated on de-anonymization.
 
-## Banned-term audit (per security-threat-model-review.md §5)
-
-To be run by NEE-243 against this draft and every subsequent revision before commit.
