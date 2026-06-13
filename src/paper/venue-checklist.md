@@ -3,7 +3,7 @@
 **Venue:** ACM IUI 2027 (32nd International Conference on Intelligent User Interfaces), Helsinki, Finland, 2027-02-08 to 2027-02-11.
 **Track:** IUI 2027 Papers
 **Source:** https://iui.acm.org/2027/call-for-papers/
-**Retrieved:** 2026-05-17 by EB1A Case Manager (NEE-199)
+**Retrieved:** 2026-05-17 by internal venue-check pass
 **Authoritative ground truth:** the linked CFP page. Re-verify before any submission step; do not act from this checklist alone.
 
 ## Key deadlines (AoE)

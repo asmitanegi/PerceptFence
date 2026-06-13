@@ -264,8 +264,6 @@ The ablation supports a small but specific design claim: no single module is suf
 
 **Costs and tradeoffs.** The main cost is false blocking and task-context loss. The guarded path has a higher mean false block rate than the baseline, and context exclusion can suppress benign task-critical units alongside sensitive units. The second cost is engineering control. A developer must own the capture-to-context path, memory layer, and output-display boundary. The third cost is audit sensitivity: even metadata about policy decisions can reveal that a sensitive event occurred. The prototype handles this by excluding raw sensitive payloads from the log, but a deployment would still need an access-control and retention policy for audit metadata.
 
-**Relationship to C6 evidence.** For EB1A C6 packaging, the manuscript's value is strongest when the paper stays as a bounded scholarly artifact: a clear problem statement, an implemented prototype, a benchmark table, a figure, a source-checked related-work section, and a limitation section that prevents claim inflation. The draft should not be positioned as a deployed product or as evidence of broad user impact. Its current evidence value is a research-output trail: a reproducible artifact and manuscript moving toward external submission.
-
 ---
 
 ## 7. Limitations
@@ -306,4 +304,3 @@ Formatted by ACM-Reference-Format from `references.bib`. See that file for all 1
 ## Anonymity and de-anonymization log
 
 This draft is anonymous. Author block, affiliations, acknowledgments, and CITATION.cff de-anonymization happen at submission time. Repository links in references are also gated on de-anonymization.
-
