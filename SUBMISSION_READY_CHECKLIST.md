@@ -69,11 +69,11 @@ Local-only package path: `submission/` (ignored by Git).
 
 ## 6. Editorial Manager account / portal gate
 
-- [ ] Create or verify an Editorial Manager account for Springer _Cybersecurity_.
-- [ ] Save the final verified credentials to Neeraj's local credentials file and Bitwarden handoff message.
-- [ ] Verify login by reaching the author dashboard, not merely by seeing a registration form.
+- [x] Create or verify an Editorial Manager account for Springer _Cybersecurity_.
+- [x] Save the final verified credentials to Neeraj's local credentials file and Bitwarden handoff message.
+- [x] Verify login by reaching the author dashboard, not merely by seeing a registration form.
 - [ ] Stage upload fields/files up to the final human certification gate.
-- [ ] Capture exact portal state: account email, role, journal title, manuscript title, uploaded files, and next required click.
+- [x] Capture exact portal state: account email, role, journal title, manuscript title, uploaded files, and next required click. Current verified state: author dashboard reached, journal is _Cybersecurity_, account email is `b.neerajkumarsingh@gmail.com`, no manuscripts started yet.
 
 ## 7. Final submission gate
 
@@ -83,7 +83,7 @@ The paper is **submission-ready** only when all of these are true:
 - [ ] Local tests/smoke/ablation pass after the final commit.
 - [ ] Public-language and private-case leak scans pass.
 - [ ] Local upload package checksums pass after final rebuild.
-- [ ] Editorial Manager account login is verified.
+- [x] Editorial Manager account login is verified.
 - [ ] Portal has the manuscript metadata and files staged.
 - [ ] Neeraj explicitly clears final author/legal declarations and final submit click.
 - [ ] External receipt is captured after submit.
