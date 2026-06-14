@@ -1,60 +1,32 @@
-# Cover Letter — Cybersecurity (Springer Nature)
+# Cover Letter - Cybersecurity (Springer Nature)
 
-**To:** Editor-in-Chief, Cybersecurity (Springer Nature)
-**From:** Neeraj Kumar Singh, Parafin, Inc., San Francisco, CA, USA
-**E-mail:** neeraj@parafin.com
-**Date:** 2026-05-16
-**Re:** Submission of original research article
-
----
+**To:** Editor-in-Chief, *Cybersecurity*  
+**From:** Neeraj Kumar Singh, Parafin, Inc., San Francisco, CA, USA  
+**E-mail:** b.neerajkumarsingh@gmail.com  
+**Date:** 2026-06-13  
+**Re:** Original research article submission
 
 Dear Editor-in-Chief,
 
-We submit for your consideration an original research article entitled
-**"Consent-Aware Runtime Mediation for Privacy in Real-Time Screen-Share AI
-Assistants"** for publication in *Cybersecurity*.
+I submit for your consideration an original research article entitled **"Consent-Aware Runtime Mediation for Privacy in Real-Time Screen-Share AI Assistants"** for publication in *Cybersecurity*.
 
-Live screen-share AI assistants now sit inside production engineering and
-customer-support workflows, where they observe raw screen and speech streams
-containing credentials, personal data, and sensitive business context. Existing
-privacy controls operate at the session level — a blanket on/off toggle — and
-cannot enforce the per-frame, per-content-category policies that live
-screen-share deployment requires. This gap is a direct and growing security
-concern as screen-share AI adoption scales.
+Live screen-share AI assistants can observe raw screen and speech streams that contain credentials, personal data, notification content, and sensitive task context. Existing session-level privacy controls do not decide, at runtime, what an assistant may observe, retain, or say after capture begins. This manuscript studies that gap as a runtime-mediation problem.
 
-Our paper makes three contributions relevant to *Cybersecurity*'s scope:
+The paper makes three bounded contributions relevant to *Cybersecurity*:
 
-1. **A runtime mediation design** decomposed into seven modules (consent/policy
-   engine, redaction engine, session memory gate, output guard, audit logger,
-   and two capture adapters) with explicit trust boundaries and an adversary
-   model that covers prompt injection, output leakage, and adversarial-evasion
-   attacks delivered through displayed screen content.
+1. A runtime mediation design decomposed into consent/policy, redaction, session-memory, output-guard, audit, and capture-adapter components, with explicit trust boundaries and out-of-scope adversaries.
+2. A synthetic benchmark of eleven screen-share scenario classes, including credentials, personal data, sensitive speech fragments, screen-visible prompt injection, fast window switching, and three adversarial-evasion classes.
+3. A per-module ablation and claim-to-metric audit tying the empirical claims to committed synthetic evaluation artifacts.
 
-2. **A per-module ablation study** on a synthetic benchmark of 11 scenario
-   classes, including three adversarial-evasion classes (Unicode-homoglyph
-   credentials, split PII, and encoded screen instructions). The full guard
-   achieves the expected outcome on 11/11 fixtures; the unmediated baseline
-   reaches it on 0/11.
+All evaluation inputs are synthetic. No real screen captures, personal data, customer data, organizational data, production telemetry, or human-subject data were collected or used. The manuscript makes no claim of formal privacy, deployment readiness, or protection against compromised hosts, poisoned models, or supply-chain attacks.
 
-3. **A claim-to-metric audit framework** that ties every empirical claim to a
-   specific CSV row, making the evaluation independently verifiable.
-
-The manuscript is 9 sections, approximately 6,500 words, with 5 tables and 16
-references. The reference implementation and synthetic fixture set are available
-as open-source artifacts.
-
-This article has not been submitted elsewhere and is not under review at any
-other journal or conference. All evaluation data is synthetic; no human subjects
-are involved and IRB approval is not required.
-
-We suggest the following potential reviewers based on relevant published work in
-this area: researchers who have published on runtime privacy controls, prompt
-injection defenses, and AI assistant security — specifically those active in
-venues such as USENIX Security, CCS, and IEEE S&P.
+I confirm that this manuscript has not been published elsewhere and is not under consideration by another journal, unless a preprint/archive record is explicitly disclosed in the Editorial Manager submission. The author has approved the manuscript and agrees with its submission to *Cybersecurity*.
 
 Thank you for considering this submission.
 
-**Neeraj Kumar Singh**
-Parafin, Inc.
-San Francisco, California, USA
-neeraj@parafin.com
+Sincerely,
+
+Neeraj Kumar Singh  
+Parafin, Inc., San Francisco, CA, USA  
+b.neerajkumarsingh@gmail.com  
+ORCID: https://orcid.org/0009-0002-2125-1805

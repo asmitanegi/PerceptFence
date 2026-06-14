@@ -2,8 +2,10 @@
 
 **Consent-Aware Runtime Mediation for Privacy in Real-Time Screen-Share AI Assistants**
 
-> Anonymous-review research artifact targeting **ACM IUI 2027** (papers track).
-> All inputs are synthetic. No real screen captures, no real personal data, no real notifications. Authorship metadata is intentionally absent during double-blind review.
+> Public research artifact and submission package source for a synthetic-only study of runtime mediation in screen-share AI assistants.
+> All inputs are synthetic. No real screen captures, no real personal data, no real notifications, no customer data, and no production telemetry are included.
+
+**Submission-readiness checklist:** [`SUBMISSION_READY_CHECKLIST.md`](SUBMISSION_READY_CHECKLIST.md)
 
 ---
 
@@ -28,6 +30,9 @@ A multimodal assistant integrated into a screen-share session sees the same surf
 ```
 PerceptFence/
 ├── README.md                  ← you are here
+├── LICENSE                    ← all-rights-reserved public artifact license
+├── CITATION.cff               ← citation metadata for the public artifact
+├── SUBMISSION_READY_CHECKLIST.md ← repo cleanup + paper submission gate
 ├── PROJECT.md                 ← canonical project plan, M0–M5 milestones, gating rules
 ├── policy-boundaries.md       ← per-module enforces / does-not-enforce / trust assumptions
 ├── security-threat-model-review.md  ← banned-term list + claim-to-metric mapping
@@ -40,8 +45,8 @@ PerceptFence/
 │       └── per_fixture_ablation.csv  ← synthetic diagnostics, per-variant × per-fixture
 └── src/                       ← code artifact (review-pack subtree)
     ├── README.md              ← reproducibility quickstart for the artifact track
-    ├── CITATION.cff           ← anonymous citation file
-    ├── LICENSE                ← review-only license
+    ├── CITATION.cff           ← citation metadata copy for artifact bundles
+    ├── LICENSE                ← all-rights-reserved artifact license
     ├── SECURITY.md            ← allowed/disallowed inputs
     ├── pyproject.toml         ← stdlib-only, Python ≥ 3.10
     ├── policies/

@@ -1,11 +1,14 @@
 cff-version: 1.2.0
 title: "Consent-Aware Runtime Mediation for Privacy in Real-Time Screen-Share AI Assistants"
-message: "If citing this anonymous artifact during review, cite the submitted anonymous manuscript. Real authorship metadata is intentionally absent until the camera-ready window."
+message: "If you use this research artifact, cite the accompanying manuscript and this software record."
 type: software
 authors:
-  - name: "Anonymous Authors"
+  - family-names: "Singh"
+    given-names: "Neeraj Kumar"
+    orcid: "https://orcid.org/0009-0002-2125-1805"
 version: "0.2.0"
-date-released: "2026-04-29"
+date-released: "2026-06-13"
+license: "LicenseRef-All-Rights-Reserved"
 keywords:
   - screen-share assistants
   - multimodal AI
@@ -19,7 +22,6 @@ abstract: >-
   but users lack fine-grained runtime control over what the assistant may see,
   retain, and say. PerceptFence interposes a runtime mediation layer that
   enforces consent, redaction, memory controls, and output safeguards for live
-  multimodal assistance, with three control surfaces (observe, retain, say)
-  and an explicit single-points-of-failure analysis. Evaluated on eleven
-  synthetic scenario classes including three adversarial-evasion classes.
-  Synthetic-only; no real captures, no real personal data.
+  multimodal assistance, with three control surfaces: observe, retain, and say.
+  The artifact is evaluated on eleven synthetic scenario classes including three
+  adversarial-evasion classes. Synthetic-only; no real captures, no real personal data.

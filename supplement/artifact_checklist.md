@@ -1,8 +1,6 @@
 # PerceptFence Artifact Checklist
 
-**Anonymous review — do not include author identity, organization, or public links beyond what is already in this checklist.**
-
-This supplement bundle accompanies the anonymous-review manuscript "Consent-Aware Runtime Mediation for Privacy in Real-Time Screen-Share AI Assistants." It is intended for IUI 2027 reviewers and (when applicable) artifact-evaluation reviewers.
+This supplement bundle accompanies the de-anonymized Cybersecurity (Springer Nature) manuscript "Consent-Aware Runtime Mediation for Privacy in Real-Time Screen-Share AI Assistants." It is intended as a synthetic artifact and evaluation-results supplement, not as a public DOI, Zenodo, or arXiv release.
 
 ---
 
@@ -10,10 +8,10 @@ This supplement bundle accompanies the anonymous-review manuscript "Consent-Awar
 
 | Item | Value |
 |---|---|
-| Code license | Review-only research scaffold (`src/LICENSE`) |
+| Code license | Review-only research scaffold (`src/LICENSE`); public release license remains unresolved. |
 | Data provenance | All fixtures are invented and synthetic. No real screen captures, no real personal data, no real notifications, no production telemetry. |
-| Author identity | Withheld for double-blind review (lives in gitignored `paper/authors.private.md`) |
-| Repository status during review | Public; commit attribution under personal-account email; no organizational identifier visible in the review pack |
+| Author identity | De-anonymized in the Springer manuscript package. |
+| Repository status during review | Repository/archive availability should match the license posture confirmed at upload time. |
 | Third-party dependencies | None (Python ≥ 3.10 standard library only) |
 | Network access required | None for any reproducibility step |
 
@@ -40,7 +38,7 @@ PerceptFence/
 ├── README.md                                  ← landing page for reviewers
 ├── PROJECT.md                                 ← M0–M5 milestones + staging rules
 ├── CITATION.cff                               ← anonymous citation file
-├── LICENSE                                    ← see src/LICENSE
+├── src/LICENSE                                ← review-only license text
 ├── SECURITY.md                                ← allowed/disallowed inputs + grep gates
 ├── supplement/
 │   └── artifact_checklist.md                  ← this file
@@ -149,16 +147,15 @@ Every claim in the manuscript maps to one of these patterns. The banned-term lis
 
 ---
 
-## 6. Anonymity confirmation
+## 6. Public-language confirmation
 
 | Check | Command | Result on this commit |
 |---|---|---|
-| Author-leak grep | `grep -rinE '<author-name-pattern>' --include="*.md" --include="*.tex" --include="*.py" --include="*.json" --include="*.cff" --include="*.toml" --exclude-dir=.git` excluding `**/authors.private.md`. The pattern set lives in `paper/authors.private.md` (gitignored) and covers author surname variants, organization identifiers, personal-email substrings, and known commit-author handles. | Zero hits |
-| Banned-term grep | `grep -inE '(^\|[^-])\b(safe\|secure\|trustworthy\|prevents? leakage\|first.ever\|novel \|verified\|useful\|usable\|comprehensive\|robust)\b'` over README, PROJECT, paper artifacts | Only file-comment hits (e.g., "Anonymous-review safe" in `threat-model.tex` header) |
-| Acknowledgements grep | `grep -rinE 'acknowledg\|thanks to\|funded by\|supported by'` excluding `**/*.private.md` | Zero hits |
-| Email/URL grep (excluding known venue domains) | `grep -rinE '@[a-z0-9.-]+\.(com\|net\|org\|io\|edu)\|https?://[a-z0-9.-]+'` | Zero hits |
+| Internal-case-language grep | Run the project-local private-case term pattern over `src/paper`, `submission`, and `supplement`. | Zero expected whole-word hits outside internal blocker reports. |
+| Banned-claim grep | `rg -n -i '\b(first ever\|formally verified\|privacy-preserving\|deployment ready\|production ready)\b' src/paper submission supplement` | Zero expected hits in upload-facing files. |
+| Synthetic-data grep | `rg -n -i '\b(real screen captures\|customer data\|production telemetry\|human subjects?)\b' src/paper submission supplement` | Expected only in negative declarations and scope limitations. |
 
-A reviewer can re-run all four greps from a fresh clone in seconds. The commands are also documented inside `PROJECT.md` and `SECURITY.md`.
+A reviewer can re-run these checks from a fresh clone in seconds. The result should be interpreted with the scope notes above; negative declarations intentionally mention excluded data types.
 
 ---
 
@@ -180,7 +177,7 @@ The audit chain is **crash-evident, not tamper-proof**: each event carries a SHA
 
 ---
 
-## 9. Fresh-clone exit test (M5)
+## 9. Fresh-clone exit test
 
 Runs end-to-end on a fresh clone with only Python ≥ 3.10:
 

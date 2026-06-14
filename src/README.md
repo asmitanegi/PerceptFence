@@ -1,10 +1,10 @@
 # PerceptFence
 
-**Private / blind-review-only artifact.**
+**Research artifact for synthetic runtime-mediation experiments.**
 
 **Article title:** "Consent-Aware Runtime Mediation for Privacy in Real-Time Screen-Share AI Assistants"
 
-This scaffold is for anonymous review preparation and synthetic smoke testing only. Do not publish it, attach live-session captures, or add identifying author or organization metadata.
+This scaffold contains the Python package, synthetic fixtures, tests, and evaluation scripts used by the PerceptFence manuscript. The artifact is public for review, citation, and reproducibility inspection; it remains all-rights-reserved unless a later release explicitly changes the license.
 
 ## Three-line thesis
 

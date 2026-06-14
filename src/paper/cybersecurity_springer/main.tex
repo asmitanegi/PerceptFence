@@ -2,7 +2,7 @@
 % PerceptFence — Springer Nature Cybersecurity submission
 % Template: sn-jnl.cls with sn-mathphys-num bibliography style
 % De-anonymized: Neeraj Kumar Singh, Parafin, Inc.
-% Venue: https://www.editorialmanager.com/cybe/
+% Venue: https://www.editorialmanager.com/cyse/default.aspx
 % Created: 2026-05-03 (NEE-245)
 % QA gate: PASS (NEE-243, 2026-05-02)
 % ============================================================
@@ -35,7 +35,7 @@
   }%
 }
 
-\corresp{*Corresponding author. E-mail: \url{neeraj@parafin.com}}
+\corresp{*Corresponding author. E-mail: \url{b.neerajkumarsingh@gmail.com}}
 
 %%% ── Abstract ───────────────────────────────────────────────────────────────
 
@@ -64,6 +64,8 @@ screen-share assistants, with claims bounded to synthetic evidence.}
 
 \keywords{privacy, screen-share assistants, runtime mediation, consent,
           redaction, multimodal AI, prompt injection, evaluation}
+
+\begin{document}
 
 \maketitle
 
@@ -776,6 +778,52 @@ The design does not enable surveillance: it reduces, not increases, the
 assistant's access to sensitive content. The design does not weaken existing
 privacy controls: it composes with platform-level controls and operates
 strictly inside the assistant runtime.
+
+%%%──────────────────────────────────────────────────────────────────────
+\section*{Declarations}
+%%%──────────────────────────────────────────────────────────────────────
+
+\paragraph{Funding.}
+The author received no external funding for this work.
+
+\paragraph{Competing interests.}
+The author is employed by Parafin, Inc. The study uses only synthetic data and
+does not use Parafin customer data, production telemetry, proprietary code, or
+infrastructure. The author declares no other competing interests.
+
+\paragraph{Ethics approval and consent to participate.}
+Not applicable. The study used synthetic fixtures and synthetic evaluation
+outputs only. It did not involve human participants, human-subject data, real
+screen captures, real audio recordings, customer data, production telemetry, or
+organization-specific datasets.
+
+\paragraph{Consent for publication.}
+Not applicable. The manuscript contains no identifiable human-subject data,
+real screenshots, real notifications, real speech recordings, customer records,
+or private organizational data.
+
+\paragraph{Data availability.}
+The synthetic fixture definitions and evaluation result CSV files supporting
+the reported findings are included with the supplementary materials. No real
+screen captures, personal data, customer data, production telemetry, or
+human-subject data were used.
+
+\paragraph{Code availability.}
+The reference implementation can be supplied as supplementary material with the
+manuscript, subject to the license terms included with the artifact package.
+Public repository or archive availability should be asserted only after the
+artifact publication and license posture are finalized.
+
+\paragraph{Author contributions.}
+Neeraj Kumar Singh is the sole author. He designed the runtime mediation
+architecture, implemented the synthetic prototype and evaluation fixtures,
+analyzed the results, and wrote the manuscript.
+
+\paragraph{Generative AI / tool-use disclosure.}
+AI-assisted tools were used for editorial drafting, formatting support, coding
+support, and submission-package preparation. They were not credited as authors.
+The author reviewed and remains responsible for the manuscript content, claims,
+code, synthetic data posture, and final submission declarations.
 
 %%%──────────────────────────────────────────────────────────────────────
 \section{Conclusion}\label{sec:conclusion}
