@@ -1,0 +1,10 @@
+threshold,defense,recall_in,recall_partial,recall_out,recall_overall
+0.5,naive,0.207,0.185,0.055,0.132
+0.5,perceptfence,0.629,0.565,0.147,0.392
+0.5,fullsystem,0.629,0.565,0.147,0.392
+0.7,naive,0.207,0.185,0.073,0.140
+0.7,perceptfence,0.646,0.565,0.150,0.398
+0.7,fullsystem,0.646,0.565,0.150,0.398
+0.9,naive,0.207,0.185,0.099,0.152
+0.9,perceptfence,0.659,0.565,0.150,0.401
+0.9,fullsystem,0.659,0.565,0.150,0.401

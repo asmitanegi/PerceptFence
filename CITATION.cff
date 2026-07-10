@@ -1,13 +1,26 @@
 cff-version: 1.2.0
-title: "Consent-Aware Runtime Mediation for Privacy in Real-Time Screen-Share AI Assistants"
+title: "PerceptFence: Content-Mediation Architecture and Deterministic Coverage for Screen-Share AI Assistants"
 message: "If you use this research artifact, cite the accompanying manuscript and this software record."
 type: software
 authors:
-  - family-names: "Singh"
-    given-names: "Neeraj Kumar"
+  - family-names: "Negi"
+    given-names: "Asmita"
+    email: "asmitanegi07@gmail.com"
+    orcid: "https://orcid.org/0009-0005-7566-9555"
+  - family-names: "Beshane"
+    given-names: "Neeraj Kumar Singh"
+    email: "b.neerajkumarsingh@gmail.com"
     orcid: "https://orcid.org/0009-0002-2125-1805"
-version: "0.2.0"
-date-released: "2026-06-13"
+version: "0.3.0"
+date-released: "2026-07-10"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.21150725"
+    description: "Concept DOI for all PerceptFence research-artifact versions"
+  - type: doi
+    value: "10.5281/zenodo.21289219"
+    description: "Version 0.3.0 research artifact and revised manuscript"
+repository-artifact: "https://zenodo.org/records/21289219"
 license: "LicenseRef-All-Rights-Reserved"
 keywords:
   - screen-share assistants
@@ -18,10 +31,11 @@ keywords:
   - session memory
   - privacy
 abstract: >-
-  Live screen-share AI assistants can observe raw screen and speech streams,
-  but users lack fine-grained runtime control over what the assistant may see,
-  retain, and say. PerceptFence interposes a runtime mediation layer that
-  enforces consent, redaction, memory controls, and output safeguards for live
-  multimodal assistance, with three control surfaces: observe, retain, and say.
-  The artifact is evaluated on eleven synthetic scenario classes including three
-  adversarial-evasion classes. Synthetic-only; no real captures, no real personal data.
+  PerceptFence proposes a content-layer mediation architecture for screen-share
+  AI assistants and releases a deterministic synthetic-fixture reference
+  scaffold. The artifact routes fixture scenario labels to fixed redaction,
+  per-invocation memory-gate, output, and in-memory audit actions. Its redaction
+  surface is evaluated on a self-generated deterministic coverage census and a
+  seed-paired comparison with Microsoft Presidio. It does not implement live
+  capture, authenticated re-consent, persistent cross-session memory, or an
+  external model adapter. Synthetic-only; no real captures or personal data.

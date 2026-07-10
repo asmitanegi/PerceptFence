@@ -1,6 +1,6 @@
 # ============================================================================
 # PerceptFence — Serena Configuration
-# EB1A C5 paper — research code and supplements
+# Research paper — code and supplements
 # ============================================================================
 
 project_name: PerceptFence
@@ -40,23 +40,24 @@ default_modes:
 added_modes:
 
 initial_prompt: |
-  ## PerceptFence — EB1A C5 paper
+  ## PerceptFence — research paper
 
-  **Purpose**: Research paper and accompanying code/eval for EB1A criterion C5
-  (original contribution of major significance).
+  **Purpose**: Research paper and accompanying code/eval on consent-aware
+  runtime mediation for screen-share AI assistants.
   **Stack**: Python research code + Markdown writing.
 
   ### Layout
-  - `src/` — research code
+  - `screenshare_mediator/`, `eval/`, `paper/` — research code
   - `eval/` — evaluation
   - `policies/` — policy boundaries / threat model docs
   - `docs/`, `supplement/` — paper supplements
-  - `PROJECT.md`, `SECURITY.md`, `policy-boundaries.md` — project-level docs
+  - `PAPER_MAP.md`, `SECURITY.md`, `policy-boundaries.md` — project-level docs
   - `CITATION.cff` — citation metadata
 
   ### When working here
-  Edits affect EB1A case evidence. Preserve provenance — check the eb1a skill's
-  evidence tracker before changing factual or experimental claims.
+  Preserve provenance — every empirical claim maps to a committed file under
+  `eval/results/`; re-run smoke + ablation before changing factual or
+  experimental claims.
 
 read_only_memory_patterns: []
 ignored_memory_patterns: []

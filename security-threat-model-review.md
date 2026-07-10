@@ -4,7 +4,7 @@
 **Date:** 2026-04-26
 **Paper:** "Design and evaluation of a consent-aware runtime layer for real-time screen-share assistants"
 **Review scope:** Threat-model completeness, adversary coverage, system-design risks, and claim guardrails
-**Status of paper:** M1 venue/thesis lock. Abstract, outline, title, venue checklist, non-targets, and source scaffold (`src/`) exist; no LaTeX draft exists yet.
+**Status of paper:** M1 venue/thesis lock. Abstract, outline, title, venue checklist, non-targets, and source scaffold exist; no LaTeX draft exists yet.
 
 ---
 
@@ -162,4 +162,4 @@ grep -iE '(^|[^-])\b(safe|secure|private|privacy.preserving|trustworthy|prevents
 
 Any hit should either map to a metric in `eval/metrics.md` or be removed.
 
-Add the same check to the M5 paper draft once `paper/paper.tex` exists.
+For the current Springer path, `tools/verify_submission.py` is the authoritative banned-claim gate over `paper/main.tex`.

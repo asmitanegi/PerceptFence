@@ -1,0 +1,13 @@
+defense,coverage_block,n_payload_cases,recall,neutralized,exposed
+naive,in,2720,0.207,564,2156
+naive,partial,2480,0.185,460,2020
+naive,out,4400,0.073,323,4077
+naive,all,9600,0.140,1347,8253
+perceptfence,in,2720,0.646,1758,962
+perceptfence,partial,2480,0.565,1402,1078
+perceptfence,out,4400,0.150,658,3742
+perceptfence,all,9600,0.398,3818,5782
+presidio,in,680,0.294,200,480
+presidio,partial,620,0.263,163,457
+presidio,out,1100,0.238,262,838
+presidio,all,2400,0.260,625,1775

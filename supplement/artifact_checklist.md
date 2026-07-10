@@ -1,6 +1,9 @@
 # PerceptFence Artifact Checklist
 
-This supplement bundle accompanies the de-anonymized Cybersecurity (Springer Nature) manuscript "Consent-Aware Runtime Mediation for Privacy in Real-Time Screen-Share AI Assistants." It is intended as a synthetic artifact and evaluation-results supplement, not as a public DOI, Zenodo, or arXiv release.
+This bundle is Additional file 1 for the blinded *Cybersecurity* manuscript
+"PerceptFence: Content-Mediation Architecture and Deterministic Coverage for Screen-Share AI Assistants."
+It is a self-contained review archive. The public, de-anonymized repository is
+not linked during double-anonymous review.
 
 ---
 
@@ -8,12 +11,12 @@ This supplement bundle accompanies the de-anonymized Cybersecurity (Springer Nat
 
 | Item | Value |
 |---|---|
-| Code license | Review-only research scaffold (`src/LICENSE`); public release license remains unresolved. |
+| Code license | All rights reserved; review and reproducibility inspection only (`LICENSE`). |
 | Data provenance | All fixtures are invented and synthetic. No real screen captures, no real personal data, no real notifications, no production telemetry. |
-| Author identity | De-anonymized in the Springer manuscript package. |
-| Repository status during review | Repository/archive availability should match the license posture confirmed at upload time. |
-| Third-party dependencies | None (Python ≥ 3.10 standard library only) |
-| Network access required | None for any reproducibility step |
+| Author identity | Withheld in the manuscript and review artifact. |
+| Repository status during review | Self-contained blinded Additional file; public repository intentionally unlinked. |
+| Third-party dependencies | Core harness: none. Tests: pytest. Presidio comparison and paper-figure regeneration: optional third-party dependencies. |
+| Network access required | Package installation only; no network calls during deterministic evaluation. |
 
 ---
 
@@ -22,9 +25,9 @@ This supplement bundle accompanies the de-anonymized Cybersecurity (Springer Nat
 | Item | Value |
 |---|---|
 | Reference platform | macOS / Linux laptop, 2024-vintage |
-| Python version (tested) | 3.14 (also runs on 3.10+) |
+| Python version (tested) | 3.12.13; package metadata declares Python 3.10+ |
 | External services | None |
-| Network calls | None |
+| Network calls | None for deterministic evaluation |
 | GPU | None |
 | Memory ceiling observed | < 50 MB |
 | Wall-clock budget | < 30 seconds for full reproducibility set on a laptop |
@@ -34,62 +37,53 @@ This supplement bundle accompanies the de-anonymized Cybersecurity (Springer Nat
 ## 3. File inventory
 
 ```
-PerceptFence/
-├── README.md                                  ← landing page for reviewers
-├── PROJECT.md                                 ← M0–M5 milestones + staging rules
-├── CITATION.cff                               ← anonymous citation file
-├── src/LICENSE                                ← review-only license text
-├── SECURITY.md                                ← allowed/disallowed inputs + grep gates
-├── supplement/
-│   └── artifact_checklist.md                  ← this file
-├── policy-boundaries.md                       ← per-module enforces / does-not
-├── security-threat-model-review.md            ← banned-term list + claim mapping
-├── eval/                                      ← pack-root entry points
-│   ├── smoke_test.py
-│   ├── ablation_study.py
-│   ├── benchmark.py                           ← M5 paired baseline-vs-guarded CSV
-│   ├── render_figure.py                       ← M5 stdlib-only SVG renderer
-│   ├── metrics.md                             ← canonical metric specification
-│   └── results/
-│       ├── per_module_ablation.csv            ← per-variant synthetic diagnostics
-│       ├── per_fixture_ablation.csv           ← per-variant × per-fixture diagnostics
-│       └── baseline_vs_guarded.csv            ← M5 benchmark, per scenario class × path
-├── docs/figures/
-│   ├── README.md
-│   └── headline_ser.svg                       ← M5 headline figure
-└── src/                                       ← code artifact (review-pack subtree)
-    ├── README.md                              ← reproducibility quickstart
-    ├── CITATION.cff
-    ├── LICENSE
-    ├── SECURITY.md
-    ├── pyproject.toml                         ← stdlib-only, requires-python = ">=3.10"
-    ├── policies/consent_redaction_policy.json
-    ├── data/synthetic/                         ← 11 invented fixtures + index.json
-    ├── eval/                                   ← canonical metric spec + entry points
-    └── src/screenshare_mediator/               ← 8 runtime modules + composition
+PerceptFence_review_artifact/
+├── README.md                                  ← anonymous reviewer quickstart
+├── CITATION.cff                               ← anonymous review citation file
+├── LICENSE                                    ← all-rights-reserved review license
+├── pyproject.toml  requirements-eval.txt
+├── screenshare_mediator/                      ← fixture-driven reference scaffold
+│   ├── __init__.py  models.py  capture.py  policy.py  redaction.py
+│   ├── memory.py  output_guard.py  audit.py  runtime.py  fixture_loader.py
+├── policies/consent_redaction_policy.json     ← action allow-list
+├── data/synthetic/                            ← 11 invented fixtures + index.json
+├── eval/
+│   ├── smoke_test.py  ablation_study.py  benchmark.py  metrics.md
+│   ├── render_figure.py  render_coverage_figure.py  render_architecture_figure.py
+│   ├── model_in_loop/                         ← harness and tests; no result snapshots
+│   ├── heldout/                               ← census, paired Presidio runner, protocol
+│   └── results/*.csv                         ← deterministic evidence only
+├── tests/                                     ← 42 unit/integration tests
+├── artifact_checklist.md                      ← this file
+├── SUPPLEMENT_MANIFEST.md
+└── ADDITIONAL_FILE_CHECKSUMS.sha256
 ```
 
 ---
 
 ## 4. Reproducibility recipe
 
-Every step uses only the Python standard library. No `pip install` is required.
+The deterministic evaluators use only the Python standard library. Running the
+test command requires pytest; reproducing the real Presidio baseline requires
+the pinned Presidio/spaCy environment documented in `eval/heldout/PROTOCOL.md`.
+Exploratory model snapshots are excluded because submission-grade per-case
+prompts, replies, identifiers, and repeated runs were not retained.
 
 ### 4.1 Unit tests
 
 ```bash
-cd src
-python3 -m pytest tests/ -v
+python3 -m venv .venv
+.venv/bin/pip install -r requirements-eval.txt
+.venv/bin/python -m pytest tests/ -q
 ```
 
-**Expected:** `29 passed in ~0.03s`. The suite covers fixture-set coverage, runtime-module behaviour (capture, policy, redaction including all four adversarial-evasion paths, memory gate, output guard, audit logger with hash-chain verification), benchmark metric helpers, and the TB3 trust-boundary regression.
+**Expected:** `42 passed`. The suite covers fixture-set coverage, runtime-module behaviour (capture, policy, redaction including all four adversarial-evasion paths, memory gate, output guard, audit logger with hash-chain verification), benchmark metric helpers, and the TB3 trust-boundary regression.
 
 ### 4.2 Smoke test
 
 ```bash
 python3 eval/smoke_test.py            # from pack root
-# or, equivalently, from src/:
-PYTHONPATH=src python3 eval/smoke_test.py
+PYTHONPATH=. python3 eval/smoke_test.py
 ```
 
 **Expected tail:**
@@ -100,15 +94,15 @@ SMOKE PASS: 11 synthetic scenarios validated; 3 runtime mediation paths exercise
 ### 4.3 Per-module ablation diagnostics
 
 ```bash
-python3 eval/ablation_study.py
+PYTHONPATH=. python3 eval/ablation_study.py --output-dir /tmp/perceptfence-ablation
 ```
 
-**Expected:** writes `eval/results/per_module_ablation.csv` and `eval/results/per_fixture_ablation.csv`. The `full_guard` variant achieves expected outcome on 11 of 11 fixtures; the `baseline` variant achieves 0 of 11.
+**Expected:** writes the two ablation CSVs under `/tmp/perceptfence-ablation`. The `full_guard` variant achieves expected outcome on 11 of 11 fixtures; the `baseline` variant achieves 0 of 11.
 
 ### 4.4 M5 benchmark
 
 ```bash
-python3 eval/benchmark.py
+PYTHONPATH=. python3 eval/benchmark.py --output-dir /tmp/perceptfence-benchmark
 ```
 
 **Expected headline (synthetic, 11 fixtures × 200 paired iterations):**
@@ -116,18 +110,17 @@ python3 eval/benchmark.py
 SER baseline -> guarded:  1.000 -> 0.000  (delta 1.000)
 FBR baseline -> guarded:  0.000 -> 0.143
 TSR baseline -> guarded:  0.091 -> 1.000
-median latency overhead:  ~32 µs (p95 ~70 µs, p99 ~78 µs)
 ```
 
-Writes `eval/results/baseline_vs_guarded.csv` (22 data rows = 11 scenario classes × 2 paths). Microsecond-level latency carries run-to-run variance; the SER, FBR, and TSR columns are deterministic.
+Writes `/tmp/perceptfence-benchmark/baseline_vs_guarded.csv` (22 data rows = 11 scenario classes × 2 paths). Microsecond-level latency is machine- and run-dependent; the SER, FBR, and TSR columns are deterministic.
 
 ### 4.5 M5 figure
 
 ```bash
-python3 eval/render_figure.py
+python3 eval/render_figure.py --out /tmp/perceptfence-headline-ser.svg
 ```
 
-**Expected:** writes `docs/figures/headline_ser.svg`, a deterministic stdlib-only SVG rendering of the per-class SER baseline-vs-guarded chart with the headline summary inlined as the subtitle.
+**Expected:** writes `/tmp/perceptfence-headline-ser.svg`, a deterministic stdlib-only SVG rendering of the per-class SER baseline-vs-guarded chart with the headline summary inlined as the subtitle.
 
 ---
 
@@ -135,15 +128,15 @@ python3 eval/render_figure.py
 
 | Manuscript claim pattern | Permitted by | Evidence in this artifact |
 |---|---|---|
-| "Reduced sensitive exposure" | metrics.md SER | `eval/results/baseline_vs_guarded.csv` SER columns; `docs/figures/headline_ser.svg` |
-| "Low false block rate" | metrics.md FBR | `eval/results/baseline_vs_guarded.csv` FBR column |
+| "Reduced sensitive exposure" | metrics.md SER | `eval/results/baseline_vs_guarded.csv` SER columns; reproducible with `eval/render_figure.py` |
+| "Literal benign-token removal proxy" | metrics.md FBR | `eval/results/baseline_vs_guarded.csv` FBR column; not detector precision |
 | "Bounded latency overhead" | metrics.md latency | `baseline_vs_guarded.csv` `median_dt_ms`, `p95_dt_ms`, `p99_dt_ms`, `median_rho`, `p95_rho`, `p99_rho` columns |
-| "Maintained task completion" | metrics.md TSR | `baseline_vs_guarded.csv` TSR column |
+| "Structural completion proxy" | metrics.md TSR | `baseline_vs_guarded.csv` output-presence/configured-block column; not a semantic task rubric |
 | "Detection of N sensitive-content categories" | metrics.md `DR_k` | `eval/results/per_fixture_ablation.csv` per-class outcomes |
-| "Logged policy decisions for review" | metrics.md `ALC` | per-fixture audit_event_count column in `per_fixture_ablation.csv`; `AuditLogger.verify_chain` returns true on every recorded chain |
-| "Reduced indirect disclosure" | metrics.md `IRR` | `OutputGuard._INDIRECT_DISCLOSURE_RE` block path exercised in `eval/results/per_fixture_ablation.csv` |
+| "Retained audit entries form a valid hash chain" | metrics.md `ALC` | per-fixture audit-event count and `AuditLogger.verify_chain`; no completeness or durability claim |
+| "Indirect-disclosure rule path exercised" | metrics.md `IRR` | `OutputGuard._INDIRECT_DISCLOSURE_RE` block path exercised in `eval/results/per_fixture_ablation.csv`; no separate reduction estimate is claimed |
 
-Every claim in the manuscript maps to one of these patterns. The banned-term list in `security-threat-model-review.md` §2.1 enumerates phrasings deliberately avoided in the prose.
+These patterns cover the deterministic artifact claims. Broader architectural and threat-model claims are scoped in the manuscript rather than treated as measured effects.
 
 ---
 
@@ -151,9 +144,8 @@ Every claim in the manuscript maps to one of these patterns. The banned-term lis
 
 | Check | Command | Result on this commit |
 |---|---|---|
-| Internal-case-language grep | Run the project-local private-case term pattern over `src/paper`, `submission`, and `supplement`. | Zero expected whole-word hits outside internal blocker reports. |
-| Banned-claim grep | `rg -n -i '\b(first ever\|formally verified\|privacy-preserving\|deployment ready\|production ready)\b' src/paper submission supplement` | Zero expected hits in upload-facing files. |
-| Synthetic-data grep | `rg -n -i '\b(real screen captures\|customer data\|production telemetry\|human subjects?)\b' src/paper submission supplement` | Expected only in negative declarations and scope limitations. |
+| Banned-claim grep | `rg -n -i -e '\bfirst ever\b' -e '\bformally verified\b' -e '\bprivacy-preserving\b' -e '\bdeployment ready\b' -e '\bproduction ready\b' README.md SUPPLEMENT_MANIFEST.md eval screenshare_mediator tests policies data` | Zero expected hits in reviewer-facing files. |
+| Synthetic-data grep | `rg -n -i -e '\breal screen captures\b' -e '\bcustomer data\b' -e '\bproduction telemetry\b' -e '\bhuman subjects?\b' README.md SUPPLEMENT_MANIFEST.md eval screenshare_mediator tests policies data` | Expected only in negative declarations and scope limitations. |
 
 A reviewer can re-run these checks from a fresh clone in seconds. The result should be interpreted with the scope notes above; negative declarations intentionally mention excluded data types.
 
@@ -161,15 +153,25 @@ A reviewer can re-run these checks from a fresh clone in seconds. The result sho
 
 ## 7. Threat model summary
 
-Six in-scope adversaries (A1 accidental exposure, A2 screen-visible prompt injection, A3 context confusion, A4 retention overshoot, A5 output leakage, A6 multi-actor cross-channel) and five out-of-scope adversaries (X1 OS-level, X2 malicious provider, X3 side channels, X4 colluding user, X5 cross-session inference) frame nine threats T1–T9. Three single points of failure are explicitly named: T3 (notification leakage) on the redaction stage, T4 (sensitive speech retention) on the memory gate, and T9 (audit incompleteness) on the audit logger.
+The manuscript defines eight adversaries. A1 (malicious screen content) and A5
+(temporal exposure) are in scope. A2 (malicious participant via displayed
+content) and A4 (assistant output leakage) are partially exercised. A3
+(policy-downgrade attempt) is a design assumption, not an evaluated fixture.
+A6 (infrastructure compromise), A7 (poisoned model or supply chain), and A8
+(operating-system compromise) are excluded. The full decisions and rationales
+are in manuscript Table 1; this summary must not be used to widen the claims.
 
-The audit chain is **crash-evident, not tamper-proof**: each event carries a SHA-256 hash chained from the previous event's hash, and `AuditLogger.verify_chain()` detects any post-hoc edit; an attacker with code-execution access on the host can re-chain forgeries (TA7).
+The audit list is **neither crash-evident nor append-only**. Each retained event
+carries a SHA-256 link, and `AuditLogger.verify_chain()` detects edits or
+reordering among retained entries. It accepts an empty list and a valid
+truncated prefix, so it does not prove completeness, durability, or tail
+retention.
 
 ---
 
 ## 8. Known limitations (synthetic scope)
 
-- **Generalization.** Eleven invented fixtures cover the categories an IUI reviewer would expect; they do not estimate effect sizes against real screen-share traffic, real attack distributions, or real user behaviour.
+- **Generalization.** Eleven invented fixtures exercise configured categories; they do not estimate effect sizes against real screen-share traffic, real attack distributions, or real user behaviour.
 - **Detector ceiling.** The redaction engine is rule-based; a learned detector is a natural extension that composes upstream of the same trust boundaries.
 - **Multi-line prompt injection.** The detector is non-DOTALL by design (so detection and per-line redaction agree); cross-line attacks within the configured 100-character window are residual risk.
 - **Evaluation-harness sentinel list.** The output guard's literal-fragment denylist is fixture-aware bookkeeping rather than a deployment-grade detector; the indirect-disclosure regex is the generalizable filter.
@@ -179,16 +181,20 @@ The audit chain is **crash-evident, not tamper-proof**: each event carries a SHA
 
 ## 9. Fresh-clone exit test
 
-Runs end-to-end on a fresh clone with only Python ≥ 3.10:
+Runs end-to-end on a fresh extraction with Python ≥ 3.10 and the pinned dependencies:
 
 ```bash
-git clone <anonymous-url>
-cd PerceptFence
-cd src && python3 -m pytest tests/ -v       # 29 passed
-cd .. && python3 eval/smoke_test.py         # SMOKE PASS
-python3 eval/ablation_study.py              # full_guard 1.000 over 11
-python3 eval/benchmark.py                   # SER 1.000 -> 0.000
-python3 eval/render_figure.py               # writes docs/figures/headline_ser.svg
+cd PerceptFence_review_artifact
+python3 -m venv .venv
+.venv/bin/pip install -r requirements-eval.txt
+.venv/bin/python -m pytest tests/ -q                  # 42 passed
+PYTHONPATH=. .venv/bin/python eval/smoke_test.py      # SMOKE PASS
+PYTHONPATH=. .venv/bin/python eval/ablation_study.py \
+  --output-dir /tmp/perceptfence-ablation             # full_guard 1.000 over 11
+PYTHONPATH=. .venv/bin/python eval/benchmark.py \
+  --output-dir /tmp/perceptfence-benchmark            # SER 1.000 -> 0.000
 ```
 
-No additional setup, no environment variables, no network, no model providers. If any step fails on a fresh clone, that is itself a bug.
+These commands verify the deterministic core. The paired Presidio runner is
+documented in `eval/heldout/PROTOCOL.md`; no model-behavior result is claimed.
+If a deterministic step fails on a fresh extraction, that is itself a bug.

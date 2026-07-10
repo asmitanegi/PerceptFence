@@ -6,4 +6,4 @@ That document defines, for each of the six modules (consent engine, redaction en
 
 ## Source code policy files
 
-The `src/policies/` directory contains machine-readable policy definitions (e.g., `consent_redaction_policy.json`) used by the runtime prototype. These are the implementation of the boundaries described in `policy-boundaries.md`, not a replacement for them.
+The `policies/` directory contains machine-readable policy definitions (e.g., `consent_redaction_policy.json`) used by the runtime prototype. These are the implementation of the boundaries described in `policy-boundaries.md`, not a replacement for them.

@@ -1,0 +1,40 @@
+name: verify-submission
+
+# Anti-stale gate: every push/PR must reproduce the tests and pass the
+# submission-consistency checks (tools/verify_submission.py). This is the same
+# gate the local pre-push hook runs (git config core.hooksPath tools/hooks).
+
+on:
+  push:
+    branches: [main, heldout-eval, repo/flatten-and-checklist]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Public-tree verification scans every reachable commit for private/.
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test runner
+        run: python -m pip install pytest==9.0.3
+
+      - name: Verify public projection contains no private tree or history
+        if: github.repository == 'asmitanegi/PerceptFence'
+        run: python tools/verify_public_tree.py
+
+      - name: Run unit tests (std-lib implementation, pytest runner)
+        run: python -m pytest tests/ -q
+
+      - name: Reproduce held-out robustness checks (std-lib only)
+        run: PYTHONPATH="$PWD" python eval/heldout/sensitivity_and_fullsystem.py
+
+      - name: Pre-submission verification gate
+        run: python tools/verify_submission.py

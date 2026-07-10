@@ -1,0 +1,27 @@
+# PerceptFence — evaluation environment pins (anti-stale reproducibility).
+#
+# The reference implementation and the held-out harness are STANDARD-LIBRARY ONLY:
+# they reproduce on a bare Python >= 3.10 with nothing installed. These pins exist
+# only for (a) the test RUNNER and (b) the real Microsoft Presidio baseline, so the
+# numbers in the paper cannot silently shift under a newer dependency.
+#
+# Install:  python3 -m venv .evalvenv && .evalvenv/bin/pip install -r requirements-eval.txt
+#           .evalvenv/bin/python -m spacy download en_core_web_sm   # see exact pin below
+
+# --- test runner (tests are std-lib; any recent pytest works) -------------------------
+pytest==9.0.3
+
+# Figures-as-code renderers used by the manuscript and review artifact.
+matplotlib==3.9.4
+
+# --- real Presidio baseline for the held-out comparison (Section 5.6 of the paper) ----
+# These exact versions produced the committed heldout_*.csv (Presidio recall 0.260 overall,
+# 0.183 on digit-PII). A larger spaCy model would change PERSON/ORG recall — do NOT bump
+# without regenerating the CSVs and re-running tools/verify_submission.py.
+presidio-analyzer==2.2.359
+spacy==3.8.2
+
+# spaCy English model en_core_web_sm 3.8.0 is not a normal PyPI dependency; pin it exactly:
+#   .evalvenv/bin/pip install \
+#     https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl

@@ -1,0 +1,12 @@
+[project]
+name = "perceptfence"
+version = "0.3.0"
+description = "PerceptFence runtime mediation for screen-share AI assistants — synthetic-only research artifact."
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+python_files = ["test_*.py"]
+addopts = "-q"

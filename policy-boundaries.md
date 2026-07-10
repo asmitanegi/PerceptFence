@@ -1,6 +1,6 @@
 # Policy Boundaries — PerceptFence Runtime Mediation Layer
 
-**Source:** Security review for NEE-1242
+**Source:** Internal security review of the runtime mediation design
 **Date:** 2026-04-26
 **Purpose:** Define what each policy module enforces, what it does NOT enforce, and the trust assumptions. This document should be adapted into the paper repo's `policies/README.md` when M3 (repo scaffold) is built.
 

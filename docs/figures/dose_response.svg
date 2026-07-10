@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="460" viewBox="0 0 720 460" role="img" aria-label="PerceptFence held-out recall versus evasion intensity">
+<rect x="0" y="0" width="100%" height="100%" fill="white"/>
+<text x="360.0" y="34" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="18" font-weight="600" fill="#1a1a1a">Held-out recall vs. evasion intensity (PerceptFence)</text>
+<text x="360.0" y="55" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="12" fill="#666">Graceful degradation on targeted normalization families; from heldout_dose_response.csv</text>
+<line x1="70" y1="390.0" x2="520" y2="390.0" stroke="#ddd"/>
+<text x="62" y="394.0" text-anchor="end" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="11" fill="#333">0.00</text>
+<line x1="70" y1="310.0" x2="520" y2="310.0" stroke="#ddd"/>
+<text x="62" y="314.0" text-anchor="end" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="11" fill="#333">0.25</text>
+<line x1="70" y1="230.0" x2="520" y2="230.0" stroke="#ddd"/>
+<text x="62" y="234.0" text-anchor="end" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="11" fill="#333">0.50</text>
+<line x1="70" y1="150.0" x2="520" y2="150.0" stroke="#ddd"/>
+<text x="62" y="154.0" text-anchor="end" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="11" fill="#333">0.75</text>
+<line x1="70" y1="70.0" x2="520" y2="70.0" stroke="#ddd"/>
+<text x="62" y="74.0" text-anchor="end" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="11" fill="#333">1.00</text>
+<text transform="rotate(-90 24 230.0)" x="24" y="230.0" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="12" fill="#1a1a1a">Sensitive-content recall</text>
+<line x1="70.0" y1="390" x2="70.0" y2="395" stroke="#333"/>
+<text x="70.0" y="410" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="11" fill="#333">1</text>
+<line x1="220.0" y1="390" x2="220.0" y2="395" stroke="#333"/>
+<text x="220.0" y="410" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="11" fill="#333">2</text>
+<line x1="370.0" y1="390" x2="370.0" y2="395" stroke="#333"/>
+<text x="370.0" y="410" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="11" fill="#333">3</text>
+<line x1="520.0" y1="390" x2="520.0" y2="395" stroke="#333"/>
+<text x="520.0" y="410" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="11" fill="#333">4</text>
+<text x="295.0" y="434" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="12" fill="#1a1a1a">Evasion intensity</text>
+<line x1="70" y1="390" x2="520" y2="390" stroke="#333"/>
+<polyline points="70.0,127.0 220.0,141.0 370.0,116.1 520.0,127.0" fill="none" stroke="#2c7fb8" stroke-width="2.5"/>
+<circle cx="70.0" cy="127.0" r="3.5" fill="#2c7fb8"/>
+<circle cx="220.0" cy="141.0" r="3.5" fill="#2c7fb8"/>
+<circle cx="370.0" cy="116.1" r="3.5" fill="#2c7fb8"/>
+<circle cx="520.0" cy="127.0" r="3.5" fill="#2c7fb8"/>
+<line x1="534" y1="80" x2="554" y2="80" stroke="#2c7fb8" stroke-width="2.5"/>
+<text x="560" y="84" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="12" fill="#1a1a1a">split-digit PII</text>
+<polyline points="70.0,153.8 220.0,167.9 370.0,186.2 520.0,190.0" fill="none" stroke="#d95f02" stroke-width="2.5"/>
+<circle cx="70.0" cy="153.8" r="3.5" fill="#d95f02"/>
+<circle cx="220.0" cy="167.9" r="3.5" fill="#d95f02"/>
+<circle cx="370.0" cy="186.2" r="3.5" fill="#d95f02"/>
+<circle cx="520.0" cy="190.0" r="3.5" fill="#d95f02"/>
+<line x1="534" y1="102" x2="554" y2="102" stroke="#d95f02" stroke-width="2.5"/>
+<text x="560" y="106" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="12" fill="#1a1a1a">Unicode confusable</text>
+<polyline points="70.0,151.9 220.0,210.2 370.0,241.2 520.0,263.0" fill="none" stroke="#7570b3" stroke-width="2.5"/>
+<circle cx="70.0" cy="151.9" r="3.5" fill="#7570b3"/>
+<circle cx="220.0" cy="210.2" r="3.5" fill="#7570b3"/>
+<circle cx="370.0" cy="241.2" r="3.5" fill="#7570b3"/>
+<circle cx="520.0" cy="263.0" r="3.5" fill="#7570b3"/>
+<line x1="534" y1="124" x2="554" y2="124" stroke="#7570b3" stroke-width="2.5"/>
+<text x="560" y="128" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="12" fill="#1a1a1a">zero-width insertion</text>
+<text x="700" y="448" text-anchor="end" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="10" fill="#666">Synthetic census; deterministic over 20 seeds</text>
+</svg>

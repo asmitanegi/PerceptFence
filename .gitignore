@@ -1,5 +1,8 @@
 .DS_Store
 
+# Self-improving-agent local ledger (per-developer; never commit to the public artifact)
+.learnings/
+
 # Python/runtime cleanup
 __pycache__/
 *.py[cod]
@@ -19,9 +22,20 @@ paper/authors.private.md
 **/authors.private.md
 **/*.private.md
 
-# Paper-enhancer phase outputs are tracked scaffold artifacts for NEE-1254.
-# Keep arbitrary local scratch out, but allow the committed phase markdown files.
+# Paper-enhancer phase outputs are tracked scaffold artifacts.
+# Keep arbitrary local scratch out, but allow the committed manuscript sources.
 paper/*
+!paper/main.tex
+!paper/references.bib
+!paper/references-audit.md
+!paper/authors_identity.tex
+!paper/figures/
+paper/figures/*
+!paper/figures/heldout_coverage.pdf
+!paper/figures/architecture_walkthrough.pdf
+# Vendored Springer Nature template (Dec 2024 v3.1) for local compilation.
+!paper/sn-jnl.cls
+!paper/sn-mathphys-num.bst
 
 # Local/generated submission bundles are not part of the public source repo.
 # Keep the public readiness checklist at the repository root instead.
@@ -35,4 +49,11 @@ docs/*
 docs/figures/*
 !docs/figures/headline_ser.svg
 !docs/figures/headline_ser.pdf
+!docs/figures/dose_response.svg
 !docs/figures/README.md
+
+# Local eval venv (Presidio baseline harness — not part of the std-lib artifact)
+.evalvenv/
+
+# Public projection: internal control plane must never be committed here.
+/private/

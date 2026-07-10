@@ -1,0 +1,9 @@
+#!/bin/sh
+# Pre-submission verification gate — blocks a push if any gate fails.
+# Install (one-time, tracked & shareable):  git config core.hooksPath tools/hooks
+# Bypass for a WIP push:                     git push --no-verify
+echo "Running pre-submission verification gate (tools/verify_submission.py)..."
+python3 "$(git rev-parse --show-toplevel)/tools/verify_submission.py" || {
+  echo "Push blocked: stale/divergent submission artifact. Fix the FAILs above, or use --no-verify for a WIP push."
+  exit 1
+}

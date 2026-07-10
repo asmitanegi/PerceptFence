@@ -1,0 +1,4 @@
+defense,seeds,n_benign_tokens,benign_tokens_removed,benign_tokens_preserved,benign_token_removal_rate
+naive,20,10400,0,10400,0.000
+perceptfence,20,10400,0,10400,0.000
+presidio,5,2600,0,2600,0.000
