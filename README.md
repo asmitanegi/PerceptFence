@@ -5,7 +5,7 @@
 > Public research artifact for a synthetic-only study of runtime mediation in screen-share AI assistants.
 > All inputs are synthetic. No real screen captures, no real personal data, no real notifications, no customer data, and no production telemetry are included.
 
-**Start here:** [`PAPER_MAP.md`](PAPER_MAP.md) — a five-minute orientation to the research question, the code artifact, and exactly what the evaluation does and does not claim.
+**Start here:** [`PAPER_MAP.md`](PAPER_MAP.md) gives you a five-minute claim/evidence orientation. [`PROJECT_LEARNING_GUIDE.md`](PROJECT_LEARNING_GUIDE.md) then teaches you the architecture, execution path, evaluation, limitations, reproduction flow, and paper-submission path in second person.
 
 ---
 
@@ -31,6 +31,7 @@ A multimodal assistant integrated into a screen-share session sees the same surf
 PerceptFence/
 ├── README.md                  ← you are here
 ├── PAPER_MAP.md               ← five-minute orientation map (read this first)
+├── PROJECT_LEARNING_GUIDE.md  ← second-person project and paper learning path
 ├── SUBMISSION_CHECKLIST.md    ← evidence-backed submission readiness gate
 ├── LICENSE                    ← all-rights-reserved public artifact license
 ├── CITATION.cff               ← citation metadata for the public artifact
