@@ -54,6 +54,7 @@ docs/figures/*
 
 # Local eval venv (Presidio baseline harness — not part of the std-lib artifact)
 .evalvenv/
+.evalvenv/
 
 # Public projection: internal control plane must never be committed here.
 /private/

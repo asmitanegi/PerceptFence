@@ -33,16 +33,16 @@ def naive_redact(text: str) -> str:
 
 # --- perceptfence (system under test) ---------------------------------------------------
 _pf_adapter = None
-_pf_engine = None
+_pf_engines: dict = {}
 
 
-def perceptfence_redact(text: str) -> str:
-    global _pf_adapter, _pf_engine
-    if _pf_engine is None:
+def _perceptfence(text: str, screen_families: bool) -> str:
+    global _pf_adapter
+    if screen_families not in _pf_engines:
         from screenshare_mediator.capture import SyntheticCaptureAdapter
         from screenshare_mediator.redaction import RedactionEngine
         _pf_adapter = SyntheticCaptureAdapter()
-        _pf_engine = RedactionEngine()
+        _pf_engines[screen_families] = RedactionEngine(screen_families=screen_families)
     from screenshare_mediator.models import PolicyDecision
     fixture = {
         "id": "heldout",
@@ -52,7 +52,17 @@ def perceptfence_redact(text: str) -> str:
     }
     cap = _pf_adapter.capture(fixture)
     dec = PolicyDecision("heldout", "terminal_secret", "redact_before_model", "held-out eval")
-    return _pf_engine.mediate(cap, dec).model_context
+    return _pf_engines[screen_families].mediate(cap, dec).model_context
+
+
+def perceptfence_redact(text: str) -> str:
+    """v0.4 engine (six census families + T7-T10 rendered-screen families)."""
+    return _perceptfence(text, True)
+
+
+def perceptfence_v03_redact(text: str) -> str:
+    """v0.3 engine exactly as submitted (six families only)."""
+    return _perceptfence(text, False)
 
 
 # --- real Presidio baseline (lazy) ------------------------------------------------------

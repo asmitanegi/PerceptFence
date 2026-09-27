@@ -162,7 +162,7 @@ Current diagnostic table (committed snapshot):
 
 ## Architecture in one paragraph
 
-The released artifact begins at a typed synthetic fixture, not raw live capture. A hard-coded `scenario_class → action` router emits a `PolicyDecision`; there is no content-category classifier or authenticated consent state machine. The redactor applies six deterministic transform families before content reaches a deterministic assistant stub. A per-invocation memory gate can exclude the current turn's context; there is no persistent cross-turn store. The output guard uses isolated policy-only context. The in-memory SHA-256 chain detects edits to retained events but accepts empty or valid truncated prefixes, so it is not append-only, complete, durable, or crash-evident. Four trust boundaries (TB1–TB4) and seven trust assumptions (TA1–TA7) condition every claim.
+The released artifact begins at a typed synthetic fixture, not raw live capture. A hard-coded `scenario_class → action` router emits a `PolicyDecision`; there is no content-category classifier or authenticated consent state machine. The redactor applies six deterministic transform families (plus four rendered-screen families T7–T10 in v0.4) before content reaches a deterministic assistant stub. A per-invocation memory gate can exclude the current turn's context; there is no persistent cross-turn store. The output guard uses isolated policy-only context. The in-memory SHA-256 chain detects edits to retained events but accepts empty or valid truncated prefixes, so it is not append-only, complete, durable, or crash-evident. Four trust boundaries (TB1–TB4) and seven trust assumptions (TA1–TA7) condition every claim.
 
 ## Status
 
@@ -170,10 +170,38 @@ The released artifact begins at a typed synthetic fixture, not raw live capture.
 |---|---|
 | **M0** Venue and thesis lock | ✅ Complete |
 | **M1** Threat model and policy boundaries | ✅ Complete |
-| **M2** Synthetic fixture set + runtime modules | ✅ Complete (42/42 tests pass, 11 scenario classes) |
+| **M2** Synthetic fixture set + runtime modules | ✅ Complete (42/42 v0.3 tests; 50/50 with v0.4) |
 | **M3** Anonymous paper skeleton + metric specification | ✅ Complete |
 | **M4** Smoke path + ablation diagnostics + adversarial-evasion coverage | ✅ Complete (full_guard 11/11 on synthetic diagnostics) |
 | **M5** Benchmark, headline figure, deterministic coverage census | ✅ Complete |
+| **M6** Rendered-screen evaluation (Chrome + OCR, frozen split, held-out templates) | ✅ Complete (v0.4) |
+
+## v0.4 — rendered-screen evaluation (developer-support use case)
+
+**Use case.** A developer or support engineer shares a screen with an AI assistant to debug a failure. The assistant needs the error text; it should not receive the AWS keys, GitHub/Stripe/Slack/OpenAI tokens, database passwords, private keys, or customer PII that are also on that screen.
+
+**What is measured.** 480 synthetic screens across 8 templates (terminal `env` dump, `.env` editor, CI log, support-console customer record, chat notification, `kubectl` secret YAML, `cat` of an SSH key, notebook with a customer table), each rendered by headless Chrome at 1280×720 in 12 conditions (dark/light × 13/16/20 px × lossless/compressed), then read by Tesseract OCR. Every defense gets the identical OCR text; the unchanged v0.3 exposure oracle decides whether each planted value is still recoverable. Split rules were frozen and hashed before testing ([`eval/screen/PROTOCOL.md`](eval/screen/PROTOCOL.md), [`supplement/screen_eval/FREEZE.sha256`](supplement/screen_eval/FREEZE.sha256)); three of the eight templates were never rendered during development.
+
+| Defense (frozen test split, 968 OCR-surviving payloads) | Neutralised | Rate | Wilson 95% | Benign kept |
+|---|---:|---:|---:|---:|
+| gitleaks 8.30.1 (default rules) | 173 | 0.179 | 0.156–0.204 | 1.000 |
+| naive regex | 373 | 0.385 | 0.355–0.416 | 0.938 |
+| PerceptFence v0.3 (as submitted) | 462 | 0.477 | 0.446–0.509 | 0.938 |
+| Microsoft Presidio 2.2.359 | 562 | 0.581 | 0.549–0.611 | 0.822 |
+| **PerceptFence v0.4** | **889** | **0.918** | 0.899–0.934 | 0.932 |
+| PerceptFence v0.4, held-out templates only (423) | 412 | 0.974 | 0.954–0.985 | **0.763** |
+
+**Where it loses.** Presidio is better on person names in free text (0.733 vs 0.492). On held-out templates v0.4 removed the Kubernetes secret name and the SSH host in every occurrence — the objects a support engineer would be asking about — so benign retention there is 0.763. 592 of 1,560 planted values were destroyed by OCR itself and are excluded, not counted as wins. Screens are synthetic HTML, OCR is one engine, and no real user session is involved.
+
+**Reproduce** (needs Google Chrome, `tesseract`, `gitleaks`, and the eval venv):
+
+```bash
+eval/screen/py.sh eval/screen/render_ocr.py --split test --out /tmp/ocr-test.jsonl
+eval/screen/py.sh eval/screen/score.py --split test --ocr /tmp/ocr-test.jsonl \
+  --csv /tmp/test.csv --summary /tmp/test.json
+```
+
+Committed outputs: [`supplement/screen_eval/test_summary.json`](supplement/screen_eval/test_summary.json), per-payload [`test_payloads.csv`](supplement/screen_eval/test_payloads.csv). No screenshot or generated credential is committed; values are regenerated from the seed.
 
 ## Headline: self-generated deterministic coverage census
 
@@ -216,10 +244,10 @@ The canonical threat model is the eight-adversary table in the manuscript (Threa
   author = {Negi, Asmita and Beshane, Neeraj Kumar Singh},
   title  = {PerceptFence: Content-Mediation Architecture and Deterministic Coverage for Screen-Share AI Assistants},
   year   = {2026},
-  version = {0.3.0},
+  version = {0.4.0},
   doi    = {10.5281/zenodo.21289219},
   url    = {https://doi.org/10.5281/zenodo.21289219},
-  note   = {Research artifact and revised manuscript; manuscript under journal submission. Concept DOI: 10.5281/zenodo.21150725.}
+  note   = {Research artifact and manuscript, v0.4.0 adds the rendered-screen evaluation. Concept DOI: 10.5281/zenodo.21150725.}
 }
 ```
 
@@ -233,6 +261,6 @@ See `LICENSE`. This is a review-only research scaffold; redistribution outside t
 
 ## Artifact identity and safety note
 
-This public artifact is de-anonymized for the public research-artifact route, while the Cybersecurity review manuscript remains double-anonymous. `CITATION.cff` names both authors as independent researchers: Asmita Negi and Neeraj Kumar Singh Beshane. Parked alternate-venue variants were deleted during the repository entropy pass; recreate a new projection only after an explicit venue decision.
+This public artifact is de-anonymized, and the International Journal of Information Security package (declined 2026-09-09) was single-blind. `CITATION.cff` names both authors as independent researchers: Asmita Negi and Neeraj Kumar Singh Beshane. The package builder still produces an identity-free source and PDF for any future venue that requires double-anonymous review.
 
 The following safety facts hold regardless of route: this repository contains no real screen captures, no real personal data, no real notifications, no customer data, and no production telemetry. Every fixture is synthetic. Banned-term and blind-leak gates run through `tools/verify_submission.py` (also wired into CI via `.github/workflows/` and the local pre-push hook); the claim-to-metric mapping lives in `security-threat-model-review.md`.

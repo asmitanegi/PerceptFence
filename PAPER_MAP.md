@@ -1,5 +1,7 @@
 # PAPER_MAP — PerceptFence
 
+> **Status (2026-09-27):** the v0.3 manuscript was submitted to the *International Journal of Information Security* on 2026-09-07 and declined on 2026-09-09 ("results too premature"). v0.4.0 adds the rendered-screen evaluation in response and is posted as a preprint. IJIS-specific instructions below are kept as a record of that submission.
+
 A five-minute orientation to this repository. If you read nothing else, read this file
 first. It tells a human author (or a reviewer) what the paper is, what the code does,
 what the numbers prove, and — just as importantly — what they are *not* allowed to claim.
@@ -118,18 +120,20 @@ pre-registration nor a protocol frozen before every score.
 
 ## 8. What is the target venue and why?
 
-**Springer Nature *Cybersecurity*** (journal 42400), **double-anonymous** review.
+**Springer Nature *International Journal of Information Security*** (journal 10207), **single-blind** review.
 
-Why it fits: the work is a bounded, honestly-scoped runtime-security/privacy systems study
-with a real third-party baseline (Presidio), a predeclared self-authored evasion taxonomy, and an explicit
-in-/out-of-coverage split — exactly the discipline security venues reward, and a better
-match than an HCI/usability venue (no user study) or a Tier-1 ML venue (no validated
-model-behavior study, deterministic census). The public repository is intentionally
-de-anonymized and is not linked during review; the review manuscript and uploaded
-Additional file are blinded (`\blindtrue` in `main.tex`). Submission-process materials
-(cover letter, title page, declarations packet,
-portal runbook, approval gate) are maintained in the authors' **private workspace**, not
-in this public repository.
+Why it fits: the work is a bounded runtime-security/privacy systems study matching IJIS's
+published scope for technical work in the theory, applications, and implementation of
+information security, including content protection and privacy. IJIS also has an open
+Systems Security: Security and Privacy of AI section. The paper has a real third-party
+baseline (Presidio), a predeclared self-authored evasion taxonomy, and an explicit
+in-/out-of-coverage split. This is a better fit than an HCI/usability venue (no user study)
+or a Tier-1 ML venue (no validated model-behavior study; the census is deterministic).
+The public repository and single-blind review manuscript
+identify both authors as Independent Researchers and disclose the public Zenodo/GitHub
+artifact. Submission-process materials and generated upload files remain in the internal
+repository's `private/generated-submissions/` control plane and are excluded from the public
+projection.
 
 ## 9. What files are canonical?
 
@@ -158,9 +162,9 @@ following are *generated or local* and intentionally untracked (`.gitignore`):
 - `__pycache__/`, `.pytest_cache/`, `.DS_Store` — caches/OS cruft.
 - `eval/results/*.csv` and `supplement/*.csv` are committed snapshots but are
   *regenerated* deterministically by the eval scripts; never hand-edit them.
-- **Submission package** (Editorial Manager DOCX/PDF, cover letter, title page,
-  declarations, runbook, approval gate, checksums) — **not in this repo**; it lives in the
-  authors' private workspace and is regenerated from the source here.
+- **Submission package** (Snapp PDF/source ZIP, cover letter, declarations, runbook,
+  approval gate, checksums) — internal-only under `private/generated-submissions/`; it is
+  regenerated from the canonical source and is never projected to the public repository.
 
 ---
 

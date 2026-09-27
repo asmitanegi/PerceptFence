@@ -121,14 +121,15 @@ def scan_blinded_tree(root: Path) -> None:
         raise SystemExit("blinded-tree scan failed:\n" + "\n".join(hits))
 
 
-def deterministic_zip(source_root: Path, archive: Path) -> None:
+def deterministic_zip(source_root: Path, archive: Path, package_date: str = DATE) -> None:
+    year, month, day = (int(part) for part in package_date.split("-"))
     archive.unlink(missing_ok=True)
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as handle:
         for path in sorted(source_root.rglob("*")):
             if not path.is_file():
                 continue
             archive_name = path.relative_to(source_root.parent).as_posix()
-            info = zipfile.ZipInfo(archive_name, date_time=(2026, 7, 9, 12, 0, 0))
+            info = zipfile.ZipInfo(archive_name, date_time=(year, month, day, 12, 0, 0))
             info.compress_type = zipfile.ZIP_DEFLATED
             info.external_attr = 0o100644 << 16
             handle.writestr(info, path.read_bytes())
@@ -146,11 +147,37 @@ def extract_single_root(archive: Path, destination: Path) -> Path:
     return roots[0]
 
 
-def build_blinded_source(repo: Path, work: Path, output: Path) -> tuple[Path, Path]:
-    source = work / "PerceptFence_blinded_source"
+def build_source_package(
+    repo: Path,
+    work: Path,
+    output: Path,
+    *,
+    review_model: str,
+    target: str,
+    package_date: str,
+) -> tuple[Path, Path]:
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", target):
+        raise SystemExit(f"invalid target slug: {target}")
+    if review_model not in {"double-anonymous", "single-anonymous"}:
+        raise SystemExit(f"unsupported review model: {review_model}")
+
+    review_label = "single-blind" if review_model == "single-anonymous" else review_model
+    legacy_blinded = review_model == "double-anonymous" and target == "cybersecurity"
+    source_name = "PerceptFence_blinded_source" if legacy_blinded else f"PerceptFence_{target}_source"
+    source = work / source_name
     source.mkdir(parents=True)
     for name in ("main.tex", "references.bib", "sn-jnl.cls", "sn-mathphys-num.bst"):
         copy_file(repo / "paper" / name, source / name)
+
+    if review_model == "single-anonymous":
+        copy_file(repo / "paper" / "authors_identity.tex", source / "authors_identity.tex")
+        main = source / "main.tex"
+        text = main.read_text(encoding="utf-8")
+        if r"\blindtrue" not in text:
+            raise SystemExit("main.tex does not declare the expected blinded review mode")
+        text = text.replace(r"\blindtrue", r"\blindfalse")
+        text = text.replace("double-anonymous", review_label)
+        main.write_text(text, encoding="utf-8")
 
     tex = (repo / "paper" / "main.tex").read_text(encoding="utf-8")
     figures = sorted(set(re.findall(r"\\includegraphics(?:\[[^]]*\])?\{([^}]+)\}", tex)))
@@ -159,21 +186,29 @@ def build_blinded_source(repo: Path, work: Path, output: Path) -> tuple[Path, Pa
     for relative in figures:
         copy_file(repo / "paper" / relative, source / relative)
 
+    identity_note = (
+        "authors_identity.tex is intentionally excluded for double-anonymous review.\n"
+        if review_model == "double-anonymous"
+        else "authors_identity.tex is included for single-blind review.\n"
+    )
     (source / "README.txt").write_text(
-        "PerceptFence blinded LaTeX source\n\n"
+        f"PerceptFence {review_label} LaTeX source for {target}\n\n"
         "Compile with:\n"
         "  tectonic -X compile main.tex --outdir build --keep-logs --keep-intermediates\n\n"
-        "authors_identity.tex is intentionally excluded for double-anonymous review.\n",
+        + identity_note,
         encoding="utf-8",
     )
     write_checksums(source, "SOURCE_CHECKSUMS.sha256")
-    scan_blinded_tree(source)
+    if review_model == "double-anonymous":
+        scan_blinded_tree(source)
 
-    archive = output / f"perceptfence_blinded_source_{DATE}.zip"
-    deterministic_zip(source, archive)
+    source_stem = "perceptfence_blinded_source" if legacy_blinded else f"perceptfence_{target}_source"
+    archive = output / f"{source_stem}_{package_date}.zip"
+    deterministic_zip(source, archive, package_date)
     extracted = extract_single_root(archive, work / "source-extracted")
     verify_checksum_manifest(extracted, "SOURCE_CHECKSUMS.sha256")
-    scan_blinded_tree(extracted)
+    if review_model == "double-anonymous":
+        scan_blinded_tree(extracted)
 
     build = extracted / "build"
     build.mkdir(parents=True, exist_ok=True)
@@ -187,26 +222,105 @@ def build_blinded_source(repo: Path, work: Path, output: Path) -> tuple[Path, Pa
     (work / "source_compile.stderr").write_text(result.stderr, encoding="utf-8")
     if result.returncode != 0 or not (build / "main.pdf").is_file():
         raise SystemExit("clean-extracted blinded source did not compile")
-    staged_pdf = output / f"perceptfence_blinded_manuscript_{DATE}.pdf"
+    manuscript_stem = (
+        "perceptfence_blinded_manuscript"
+        if legacy_blinded
+        else f"perceptfence_{target}_manuscript"
+    )
+    staged_pdf = output / f"{manuscript_stem}_{package_date}.pdf"
     shutil.copy2(build / "main.pdf", staged_pdf)
+    if review_model == "single-anonymous":
+        text_path = work / "single-anonymous-manuscript.txt"
+        extracted_text = subprocess.run(
+            ["pdftotext", str(staged_pdf), str(text_path)],
+            text=True,
+            capture_output=True,
+        )
+        if extracted_text.returncode != 0:
+            raise SystemExit("single-anonymous PDF text extraction failed")
+        rendered = " ".join(text_path.read_text(encoding="utf-8").split())
+        required = ("Asmita Negi", "Neeraj Kumar Singh Beshane", "Independent Researcher")
+        missing = [value for value in required if value not in rendered]
+        if missing:
+            raise SystemExit(f"single-anonymous PDF is missing author metadata: {missing}")
+        if "Parafin" in rendered:
+            raise SystemExit("single-anonymous PDF contains employer identity")
     return archive, staged_pdf
 
 
-def build_additional_file(repo: Path, work: Path, output: Path) -> Path:
+def build_blinded_source(repo: Path, work: Path, output: Path) -> tuple[Path, Path]:
+    return build_source_package(
+        repo,
+        work,
+        output,
+        review_model="double-anonymous",
+        target="cybersecurity",
+        package_date=DATE,
+    )
+
+
+def build_additional_file(
+    repo: Path,
+    work: Path,
+    output: Path,
+    *,
+    review_model: str = "double-anonymous",
+    target: str = "cybersecurity",
+    journal_name: str = "Cybersecurity",
+    package_date: str = DATE,
+) -> Path:
+    review_label = "single-blind" if review_model == "single-anonymous" else review_model
     additional = work / "PerceptFence_review_artifact"
     additional.mkdir(parents=True)
 
     copy_file(repo / "supplement" / "README_REVIEW_ARTIFACT.md", additional / "README.md")
     copy_file(repo / "supplement" / "SUPPLEMENT_MANIFEST.md", additional / "SUPPLEMENT_MANIFEST.md")
     copy_file(repo / "supplement" / "artifact_checklist.md", additional / "artifact_checklist.md")
-    copy_file(repo / "supplement" / "CITATION.cff", additional / "CITATION.cff")
+    citation_source = (
+        repo / "CITATION.cff"
+        if review_model == "single-anonymous"
+        else repo / "supplement" / "CITATION.cff"
+    )
+    copy_file(citation_source, additional / "CITATION.cff")
     for name in ("pyproject.toml", "requirements-eval.txt"):
         copy_file(repo / name, additional / name)
 
+    package_context = [
+        f"target={target}",
+        f"journal={journal_name}",
+        f"review_model={review_label}",
+        f"package_date={package_date}",
+        "article_title=PerceptFence: Content-Mediation Architecture and Deterministic Coverage for Screen-Share AI Assistants",
+    ]
+    if review_model == "single-anonymous":
+        package_context.extend(
+            [
+                "authors=Asmita Negi; Neeraj Kumar Singh Beshane",
+                "affiliation=Independent Researcher",
+                "author_1_location=San Francisco, California, United States",
+                "author_2_location=Fremont, California, United States",
+                "corresponding_author=Neeraj Kumar Singh Beshane",
+                "corresponding_email=b.neerajkumarsingh@gmail.com",
+            ]
+        )
+    (additional / "PACKAGE_CONTEXT.txt").write_text(
+        "\n".join(package_context) + "\n",
+        encoding="utf-8",
+    )
+    rights_holders = (
+        "Asmita Negi and Neeraj Kumar Singh Beshane"
+        if review_model == "single-anonymous"
+        else "Anonymous Authors"
+    )
+    artifact_label = (
+        "review artifact"
+        if review_model == "single-anonymous"
+        else "identity-hidden review artifact"
+    )
     (additional / "LICENSE").write_text(
         "All rights reserved.\n\n"
-        "Copyright (c) 2026 Anonymous Authors.\n\n"
-        "This blinded review artifact is provided solely for peer review, citation, "
+        f"Copyright (c) 2026 {rights_holders}.\n\n"
+        f"This {artifact_label} is provided solely for peer review, citation, "
         "and reproducibility inspection. No permission is granted to redistribute, "
         "sublicense, sell, or reuse it outside the review process without explicit "
         "written permission from the rights holders.\n",
@@ -239,12 +353,19 @@ def build_additional_file(repo: Path, work: Path, output: Path) -> Path:
         copy_file(repo / "paper" / "figures" / name, additional / "paper" / "figures" / name)
 
     write_checksums(additional, "ADDITIONAL_FILE_CHECKSUMS.sha256")
-    scan_blinded_tree(additional)
-    archive = output / f"perceptfence_additional_file_1_{DATE}.zip"
-    deterministic_zip(additional, archive)
+    if review_model == "double-anonymous":
+        scan_blinded_tree(additional)
+    archive_stem = (
+        "perceptfence_additional_file_1"
+        if target == "cybersecurity" and package_date == DATE
+        else f"perceptfence_{target}_additional_file_1"
+    )
+    archive = output / f"{archive_stem}_{package_date}.zip"
+    deterministic_zip(additional, archive, package_date)
     extracted = extract_single_root(archive, work / "additional-extracted")
     verify_checksum_manifest(extracted, "ADDITIONAL_FILE_CHECKSUMS.sha256")
-    scan_blinded_tree(extracted)
+    if review_model == "double-anonymous":
+        scan_blinded_tree(extracted)
     return archive
 
 
@@ -253,6 +374,14 @@ def main() -> int:
     parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--work", type=Path, default=Path("/tmp/perceptfence-final-package-build"))
+    parser.add_argument(
+        "--review-model",
+        choices=("double-anonymous", "single-anonymous"),
+        default="double-anonymous",
+    )
+    parser.add_argument("--target", default="cybersecurity")
+    parser.add_argument("--journal-name", default="Cybersecurity")
+    parser.add_argument("--date", default=DATE)
     args = parser.parse_args()
 
     repo = args.repo.resolve()
@@ -263,8 +392,23 @@ def main() -> int:
     work.mkdir(parents=True)
     output.mkdir(parents=True, exist_ok=True)
 
-    source_zip, manuscript_pdf = build_blinded_source(repo, work, output)
-    additional_zip = build_additional_file(repo, work, output)
+    source_zip, manuscript_pdf = build_source_package(
+        repo,
+        work,
+        output,
+        review_model=args.review_model,
+        target=args.target,
+        package_date=args.date,
+    )
+    additional_zip = build_additional_file(
+        repo,
+        work,
+        output,
+        review_model=args.review_model,
+        target=args.target,
+        journal_name=args.journal_name,
+        package_date=args.date,
+    )
     print(f"source_zip={source_zip} sha256={sha256(source_zip)}")
     print(f"manuscript_pdf={manuscript_pdf} sha256={sha256(manuscript_pdf)}")
     print(f"additional_zip={additional_zip} sha256={sha256(additional_zip)}")

@@ -1,9 +1,9 @@
 # PerceptFence Artifact Checklist
 
-This bundle is Additional file 1 for the blinded *Cybersecurity* manuscript
+This bundle is Additional file 1 for the PerceptFence manuscript
 "PerceptFence: Content-Mediation Architecture and Deterministic Coverage for Screen-Share AI Assistants."
-It is a self-contained review archive. The public, de-anonymized repository is
-not linked during double-anonymous review.
+It is a self-contained reproducibility archive. The package builder supplies citation,
+licence, and target context for the selected review model.
 
 ---
 
@@ -13,8 +13,8 @@ not linked during double-anonymous review.
 |---|---|
 | Code license | All rights reserved; review and reproducibility inspection only (`LICENSE`). |
 | Data provenance | All fixtures are invented and synthetic. No real screen captures, no real personal data, no real notifications, no production telemetry. |
-| Author identity | Withheld in the manuscript and review artifact. |
-| Repository status during review | Self-contained blinded Additional file; public repository intentionally unlinked. |
+| Author identity | Supplied or withheld by the package builder according to the selected review model. |
+| Repository status during review | Self-contained Additional file; public links are supplied only when the selected review model permits them. |
 | Third-party dependencies | Core harness: none. Tests: pytest. Presidio comparison and paper-figure regeneration: optional third-party dependencies. |
 | Network access required | Package installation only; no network calls during deterministic evaluation. |
 
@@ -38,8 +38,8 @@ not linked during double-anonymous review.
 
 ```
 PerceptFence_review_artifact/
-├── README.md                                  ← anonymous reviewer quickstart
-├── CITATION.cff                               ← anonymous review citation file
+├── README.md                                  ← reviewer quickstart
+├── CITATION.cff                               ← review-model-specific citation file
 ├── LICENSE                                    ← all-rights-reserved review license
 ├── pyproject.toml  requirements-eval.txt
 ├── screenshare_mediator/                      ← fixture-driven reference scaffold

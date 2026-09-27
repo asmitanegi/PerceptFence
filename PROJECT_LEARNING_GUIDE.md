@@ -1,5 +1,7 @@
 # PerceptFence — Your Project Learning Guide
 
+> **Status (2026-09-27):** the v0.3 manuscript was submitted to the *International Journal of Information Security* on 2026-09-07 and declined on 2026-09-09 ("results too premature"). v0.4.0 adds the rendered-screen evaluation in response and is posted as a preprint. IJIS-specific instructions below are kept as a record of that submission.
+
 ## Start here: what you are building
 
 You are building a bounded runtime mediation architecture for AI assistants that can see a shared screen and hear meeting content. The central problem is simple to state but easy to mishandle:
@@ -257,7 +259,7 @@ Only you and Asmita can complete the authorship and submission decisions below.
 
 ### Before the final click
 
-1. Read the frozen blinded PDF as an author, not as an editor looking for endless improvements.
+1. Read the frozen IJIS PDF as an author, not as an editor looking for endless improvements.
 2. Ask Asmita to approve the exact manuscript and confirm that:
    - she consents to submission;
    - the author order is `Asmita Negi; Neeraj Kumar Singh Beshane`;
@@ -266,21 +268,20 @@ Only you and Asmita can complete the authorship and submission decisions below.
    - the funding and competing-interest declarations are accurate;
    - her email and ORCID are correct.
 3. Confirm your corresponding-author email and ORCID.
-4. Do not add public repository or Zenodo links to blinded review files.
+4. Confirm the manuscript's public Zenodo/GitHub disclosure and Independent Researcher affiliations.
 
-### In Springer Editorial Manager
+### In Springer Nature Snapp
 
-1. Open `https://www.editorialmanager.com/cyse/`.
-2. Select **Cybersecurity → Research article**.
+1. Open `https://submission.nature.com/new-submission/10207/3`.
+2. Select **International Journal of Information Security → Regular Contribution**.
 3. Use the prepared metadata packet; do not rewrite the abstract in the portal.
 4. Add Asmita first and you second; mark yourself as corresponding author.
-5. Upload the identity-bearing title page separately.
-6. Upload the blinded manuscript as the main manuscript.
-7. Upload Additional file 1 as supplementary material.
-8. Upload the blinded source ZIP only in the source-file slot.
-9. Preview the assembled submission and verify that the blinded manuscript does not expose author identity.
-10. Make the final legal/ethical declarations yourself, then submit.
-11. Record the manuscript number and submission date in `private/STATUS.md`.
+5. Upload the single-blind source ZIP as the main manuscript.
+6. Upload Additional file 1 as supplementary material.
+7. Paste the held cover letter only after both authors approve it.
+8. Preview the assembled submission and require both author identities, Independent Researcher, the public DOI, all figures/tables/references, and zero employer identity.
+9. Make the final legal/ethical declarations yourself, then submit.
+10. Record the manuscript number and submission date in `private/STATUS.md`.
 
 ### After submission
 
@@ -312,7 +313,7 @@ Do not confuse the current Zenodo artifact DOI with a journal-article DOI. Zenod
 
 ### In 90–120 minutes
 
-- Read the blinded manuscript.
+- Read the IJIS manuscript.
 - Compare the abstract's claims with the limitations section.
 - Inspect `generator.py`, `oracle.py`, and the committed result CSVs.
 - Practice explaining why the overall 0.398 vs 0.260 comparison is indicative while 0.828 vs 0.183 is the defensible headline.
@@ -327,7 +328,7 @@ Use these prompts to learn actively:
 4. “Why is 0.828 vs 0.183 the headline, while 0.398 vs 0.260 is only indicative?”
 5. “Show me every explicit non-claim and the evidence boundary behind it.”
 6. “Quiz me on the threat model and tell me when my answer overclaims.”
-7. “Walk me through the exact files uploaded to Springer Editorial Manager.”
+7. “Walk me through the exact files uploaded to Springer Nature Snapp.”
 8. “Role-play a skeptical reviewer and make me defend the oracle, protocol amendment, and Presidio comparison.”
 9. “Give me a five-minute author explanation of PerceptFence in second person.”
 10. “Ask me ten questions that I should be able to answer before I approve submission.”
@@ -345,7 +346,7 @@ Use these prompts to learn actively:
 - **In coverage:** an evasion family for which the current redactor declares a corresponding rule.
 - **Out of coverage:** a declared evasion family with no corresponding current rule.
 - **Separately implemented oracle:** an evaluator that shares no implementation imports with the redactor but was still designed by the same project authors.
-- **Blinded manuscript:** the review PDF with author identity removed.
+- **Single-blind manuscript:** the current review PDF with author identity visible to reviewers; the repository-safe default build remains identity-hidden.
 - **Additional file 1:** the reproducibility artifact submitted alongside the manuscript.
 
 ## The sentence to keep

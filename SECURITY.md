@@ -1,6 +1,6 @@
 # Security and Data Handling
 
-This repository is a synthetic-only research artifact for a double-anonymous Springer Nature *Cybersecurity* review manuscript.
+This repository is a synthetic-only research artifact. Its International Journal of Information Security package (declined 2026-09-09) was single-blind; the reusable identity-hidden build remains available for venues that require it.
 
 ## Allowed inputs
 
@@ -13,7 +13,7 @@ This repository is a synthetic-only research artifact for a double-anonymous Spr
 
 - Real screen captures, microphone audio, notifications, or meeting recordings.
 - Production logs, customer data, organizational telemetry, private links, credentials, access tokens, or live user identifiers.
-- Author identity in rendered blinded-review manuscript output.
+- Employer identity in the single-blind manuscript or any author identity in rendered identity-hidden review output.
 
 ## Required gates
 
@@ -23,7 +23,7 @@ Before submission or push:
 python3 tools/verify_submission.py
 ```
 
-This gate checks test-count traceability, CSV drift, headline-number traceability, unit tests, blind identity leaks, banned claims, and checksum drift.
+This gate checks test-count traceability, CSV drift, headline-number traceability, unit tests, blind identity leaks, banned claims, and checksum drift. `python3 -m pytest tools/test_build_submission_package.py -q` separately proves both review-model packages.
 
 ## Audit log integrity
 

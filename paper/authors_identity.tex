@@ -1,12 +1,14 @@
-% Camera-ready / metadata identity block. EXCLUDE this file from any source
-% package sent for double-anonymous review; the blind build never reads it.
+% Identity-bearing metadata block. The package builder includes this file only
+% when the selected review model permits author identity.
 % Both authors contributed equally to this work.
 \author[1]{\fnm{Asmita} \sur{Negi}}
-\author*[1]{\fnm{Neeraj Kumar Singh} \sur{Beshane}}
+\author*[2]{\fnm{Neeraj Kumar Singh} \sur{Beshane}}
 \equalcont{Both authors contributed equally to this work.}
-\affil[1]{\orgname{Independent Researcher};
-\href{https://orcid.org/0009-0005-7566-9555}{Asmita Negi ORCID 0009-0005-7566-9555};
+\affil[1]{\orgname{Independent Researcher}, San Francisco, California, United States;
+\href{https://orcid.org/0009-0005-7566-9555}{Asmita Negi ORCID 0009-0005-7566-9555}}
+\affil[2]{\orgname{Independent Researcher}, Fremont, California, United States;
 \href{https://orcid.org/0009-0002-2125-1805}{Neeraj Kumar Singh Beshane ORCID 0009-0002-2125-1805}}
+\email{b.neerajkumarsingh@gmail.com}
 % Author contacts: asmitanegi07@gmail.com; b.neerajkumarsingh@gmail.com
 % ORCID: Asmita Negi = 0009-0005-7566-9555;
 % Neeraj Kumar Singh Beshane = 0009-0002-2125-1805.
@@ -17,3 +19,9 @@ A.~Negi and N.\,K.~S.~Beshane contributed equally to this work. Both authors
 designed the content-mediation architecture and evaluation methodology,
 implemented the reference scaffold and deterministic coverage harness, analyzed the
 results, and wrote the manuscript.}
+\newcommand{\publicartifactavailability}{%
+The source code, synthetic fixtures, evaluator annotations, machine-readable
+result CSVs, protocol, figure generators, tests, dependency pins, and artifact
+checklist are archived at \url{https://doi.org/10.5281/zenodo.21289219} and
+\url{https://github.com/asmitanegi/PerceptFence}. The submission also includes
+the reproducibility materials as Additional file~1.}

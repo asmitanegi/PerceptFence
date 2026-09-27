@@ -1,13 +1,12 @@
 % ============================================================
-% PerceptFence — Springer Nature Cybersecurity submission
+% PerceptFence — canonical Springer Nature manuscript source
 % Template: sn-jnl.cls with sn-mathphys-num bibliography style
-% Venue: Springer Nature Cybersecurity (journal 42400) -- DOUBLE-ANONYMOUS review.
-%   Build the review PDF with \blindtrue below (anonymizes authors/affiliation/
-%   employer); build the de-anonymized camera-ready/metadata copy with \blindfalse.
-% Author identity lives ONLY in authors_identity.tex (loaded by the \blindfalse
-%   branch) and the separate title page; it must never appear in this file so the
-%   source stays safe to forward during double-anonymous review.
-% Venue portal: https://www.editorialmanager.com/cyse/default2.aspx
+% Current target: International Journal of Information Security (journal 10207), single-blind review.
+%   The package builder switches this source to \blindfalse for that target.
+%   The default \blindtrue preserves the reusable double-anonymous build.
+% Author identity and public-archive links live ONLY in authors_identity.tex,
+%   loaded by the \blindfalse branch; blinded source packages exclude that file.
+% Venue portal: https://submission.nature.com/new-submission/10207/3
 % Created: 2026-05-03
 % ============================================================
 
@@ -22,12 +21,11 @@
 \usepackage{setspace}
 \usepackage[switch]{lineno}
 
-% ---- Double-anonymous review toggle ---------------------------------------
-% Cybersecurity uses DOUBLE-ANONYMOUS peer review. Set \blindtrue to build the
-% anonymized review PDF (no names, affiliation, employer, ORCID, or e-mail);
-% leave \blindfalse for the de-anonymized metadata / camera-ready build.
+% ---- Review-model toggle --------------------------------------------------
+% Keep \blindtrue as the repository-safe default. The package builder switches
+% to \blindfalse for single-blind targets such as IJIS.
 \newif\ifblind
-\blindtrue
+\blindfalse
 
 %%% ── Title ─────────────────────────────────────────────────────────────────
 
@@ -68,6 +66,13 @@ real Microsoft Presidio. On the digit-PII family both systems target,
 PerceptFence neutralises 0.828 of payloads on the 5 seeds Presidio also runs
 versus 0.183 for Presidio; outside that boundary Presidio leads 0.238 to
 0.154, so the overall 0.398 to 0.260 comparison is only indicative.
+We then evaluate the redaction surface on the path a deployed assistant uses:
+480 synthetic developer-support screens rendered by Chrome, degraded, and read
+by OCR, with split rules frozen before testing and three screen types held out.
+PerceptFence neutralises 889 of 968 OCR-surviving secrets and PII values
+(0.918; Wilson 95\% 0.899--0.934) against 0.581 for Presidio and 0.179 for
+gitleaks, and 0.974 on the held-out screen types, at a measured cost of
+0.763 task-token retention on those types.
 The contribution is a documented content-layer mediation architecture and an
 evaluation method
 with explicit coverage boundaries, not a claim of live deployment, formal
@@ -80,8 +85,7 @@ privacy, novel redaction primitives, or general model robustness.}
 
 \begin{document}
 
-\doublespacing
-\linenumbers
+\ifblind\doublespacing\linenumbers\fi
 
 \maketitle
 
@@ -150,6 +154,14 @@ Our contributions:
         The resulting 9{,}600-case census
         reports counts, across-seed spread, and the families on which Presidio
         wins rather than hiding them in one overall average.
+  \item \textbf{A rendered-screen evaluation of one concrete use case.}
+        Developer-support screens (terminals, \texttt{.env} editors, CI logs,
+        support consoles, notebooks) are rendered by a real browser, degraded
+        to approximate screen-share compression, and read by OCR before any
+        defence runs. A frozen protocol with held-out screen types compares
+        PerceptFence against Presidio and the gitleaks secret scanner, and
+        reports the utility cost alongside the protection
+        (Section~\ref{sec:screen}).
 \end{itemize}
 
 PerceptFence is a content-layer mediation architecture and an executable
@@ -625,8 +637,9 @@ Module & Role \\
     \texttt{PolicyDecision} using
     \texttt{consent\_redaction\_policy.json}. \\[3pt]
 \texttt{redaction.py}
-  & Six-family deterministic redaction engine; transforms raw context at
-    TB2. \\[3pt]
+  & Deterministic redaction engine at TB2: six census families (v0.3) plus
+    four rendered-screen families T7--T10 (v0.4), switchable for paired
+    comparison. \\[3pt]
 \texttt{memory.py}
   & Mode-A session memory gate; enforces context exclusion and
     memory-write suppression at TB3. \\[3pt]
@@ -660,15 +673,19 @@ annotation. No fixture contains real screen captures, personal data, or
 credentials.
 
 \paragraph{Test suite.}
-The test suite contains 42 tests: synthetic-fixture coverage (6 tests),
+The test suite contains 50 tests. The 42 v0.3 tests are unchanged: synthetic-fixture coverage (6 tests),
 runtime-module behaviour including the adversarial-evasion paths, audit
 hash-chain verification, and the TB3 trust-boundary regression confirming
 context-excluded content does not appear in the model context for the exclusion
 turn (23 tests), coverage-harness checks covering the self-authored generator,
 the separately implemented exposure oracle, and its positive\,/\,negative controls
 (8 tests), and model-harness scoring checks for the A1 obey/refuse signal and A4
-leakage oracle (5 tests). All 42 pass under Python~3.12.13 in the final
-verification environment; the repository CI config covers Python~3.12 only.
+leakage oracle (5 tests). Eight new tests cover T7--T10, benign developer text
+that must survive, and the switch that reproduces v0.3. All 50 pass under
+Python~3.12.14; the repository CI config covers Python~3.12 only. The
+rendered-screen harness additionally needs headless Chrome, Tesseract, and
+gitleaks, whose versions are recorded in
+\texttt{supplement/screen\_eval/test\_render\_meta.json}.
 
 \paragraph{AI-assisted development record.}
 OpenAI Codex-based coding agents accessed through Hermes Agent were used for
@@ -677,7 +694,12 @@ submission-package checks. The authors selected and edited the prose, inspected
 the implementation and generated figures, executed every reported deterministic
 evaluation and test, and verified the manuscript numbers against the committed
 CSVs. No AI-generated measurement or synthetic model reply is reported as
-empirical evidence.
+empirical evidence. For the v0.4 rendered-screen study
+(Section~\ref{sec:screen}), an Anthropic Claude agent running in Hermes Agent
+drafted the corpus generator, render and scoring harness, the T7--T10
+families, their tests, and the first draft of that section. Every reported
+number was produced by executing that code, and is traceable to the
+committed CSVs and summary JSON.
 
 \subsection{Design limits}\label{sec:designlimits}
 
@@ -1136,6 +1158,130 @@ within the harness but should not be interpreted as production-system latencies;
 actual screen-capture AI pipelines involve OCR, network, and model inference
 that would dominate the mediation overhead.
 
+%%%──────────────────────────────────────────────────────────────────────
+\subsection{Rendered-screen evaluation: the developer-support use case}\label{sec:screen}
+%%%──────────────────────────────────────────────────────────────────────
+
+The census above operates on text strings. A deployed assistant never sees
+strings: it sees pixels, and a vision or OCR front end turns them into text
+with its own errors. This section measures the redaction surface on that path,
+for one concrete use case: a developer or support engineer shares a screen with
+an assistant to debug a failure, and the screen also shows credentials or
+customer records the assistant does not need.
+
+\paragraph{Pipeline.}
+Each case is an HTML screen in one of eight templates: a terminal
+\texttt{env} dump, an editor on a \texttt{.env} file, a CI log, a support
+console customer record, a chat notification over a test run, a
+\texttt{kubectl} secret dump with base64 values, a \texttt{cat} of an OpenSSH
+private key, and a notebook with a customer table. Secrets follow the public
+formats of their providers (AWS, GitHub, Stripe, Slack, OpenAI, JWT, PEM,
+URL userinfo) and PII uses reserved or invented values (\texttt{555-01xx}
+phones, \texttt{example.*} domains). Every value is drawn from a seeded
+generator at run time, so no credential string exists in the repository.
+Each screen is rendered by headless Chrome~154 at $1280\times720$ in 12
+conditions (dark/light theme $\times$ 13/16/20\,px text $\times$ lossless or
+compressed, where compressed is a $0.75\times$ downscale, JPEG quality 55, and
+upscale back, approximating a screen-share codec). Tesseract~5.5.3 OCR
+(English, \texttt{psm}~6) produces the text every defence receives, and the
+unchanged exposure oracle of Section~\ref{sec:heldout} decides whether each
+planted value is still recoverable.
+
+\paragraph{Protocol.}
+The split was fixed before any measurement
+(\texttt{eval/screen/PROTOCOL.md}). Two development seeds over five templates
+(120 screens) were used to write four new redaction families: T7
+secret-named assignments redacted to end of line, T8 provider token grammars
+with OCR-split continuation, T9 URL userinfo, and T10 rendered-form PII
+(NANP phones, OCR-spaced e-mail, $4\times4$ card groups, and label-anchored
+fields). The engine and harness were then frozen and hashed
+(\texttt{supplement/screen\_eval/FREEZE.sha256}) and scored once on five fresh
+seeds: 300 screens from the development templates with new values, and 180
+screens from three templates never rendered during development. A payload is
+\emph{eligible} only if the oracle can recover it from raw OCR. Of 1{,}560
+planted payloads, 592 were destroyed by OCR itself and are excluded rather
+than counted as defence wins, leaving 968. No JWT and no base64 registry
+token survived OCR, so neither is measured. Intervals are Wilson 95\%; paired
+differences use a cluster bootstrap over (seed, template) with 2{,}000
+resamples.
+
+\begin{table}[ht]
+\caption{Rendered-screen test split (frozen engine, 480 screens, 968 OCR-surviving
+payloads). Neutralised = payload no longer recoverable by the exposure oracle;
+benign = fraction of task tokens present in raw OCR that survive the defence.}
+\label{tab:screen}
+\footnotesize
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Defence & Neutralised & Rate & Wilson 95\% & Benign \\
+\midrule
+No defence & 0/968 & 0.000 & [0.000, 0.004] & 1.000 \\
+gitleaks 8.30.1 (default rules) & 173/968 & 0.179 & [0.156, 0.204] & 1.000 \\
+Naive regex & 373/968 & 0.385 & [0.355, 0.416] & 0.938 \\
+PerceptFence v0.3 (six families) & 462/968 & 0.477 & [0.446, 0.509] & 0.938 \\
+Presidio 2.2.359 (\texttt{en\_core\_web\_sm}) & 562/968 & 0.581 & [0.549, 0.611] & 0.822 \\
+\textbf{PerceptFence v0.4 (+T7--T10)} & \textbf{889/968} & \textbf{0.918} & [0.899, 0.934] & 0.932 \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{Held-out templates only (423 payloads)}} \\
+PerceptFence v0.4 & 412/423 & 0.974 & [0.954, 0.985] & 0.763 \\
+Presidio & 194/423 & 0.459 & [0.412, 0.506] & 0.815 \\
+gitleaks & 38/423 & 0.090 & [0.066, 0.121] & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Effect on the string census.}
+The census numbers in Section~\ref{sec:heldout} are the v0.3 engine as
+submitted. Re-running the same 2{,}400 paired cases with v0.4 moves the overall
+PerceptFence rate from 0.398 to 0.419 and in-coverage from 0.635 to 0.681;
+the change is confined to zero-width (0.526 to 0.612), confusable (0.650 to
+0.662), and leetspeak (0.000 to 0.200), and the digit-PII headline (0.828) is
+unchanged (\texttt{supplement/screen\_eval/census\_v04\_paired\_presidio.csv}).
+
+\paragraph{Results.}
+Table~\ref{tab:screen} gives the headline. On the frozen test split
+PerceptFence v0.4 neutralises 889 of 968 OCR-surviving payloads (0.918),
+against 0.581 for Presidio and 0.179 for gitleaks. The paired advantage over
+Presidio is $+0.338$ (bootstrap 95\% interval $+0.208$ to $+0.457$), and over
+the submitted v0.3 engine it is $+0.441$ ($+0.375$ to $+0.494$). The rate did
+not fall on templates the rules never saw: 0.974 on held-out templates versus
+0.875 on the development templates with fresh values. Compression cost
+PerceptFence 2.5 points (0.930 lossless, 0.905 compressed).
+
+The per-class picture matters more than the average. Presidio is stronger on
+person names (0.733 versus 0.492), which a pattern engine has no general way
+to find outside labelled fields, and gitleaks is exact on the token formats it
+knows (Slack 1.000) but ignores PII entirely, by design. PerceptFence's
+remaining misses concentrate in three places: names in free text, OpenAI
+project keys (7 of 13 caught), where OCR inserted a space three characters
+after \texttt{sk-proj-} or dropped its first hyphen, so the frozen prefix
+rule (ten token characters) never fired, and
+private-key lines (17 of 26 caught). All 9 private-key misses kept the
+\texttt{BEGIN OPENSSH PRIVATE KEY} words, but OCR rendered the surrounding
+dashes as em-dashes, which the frozen T8 block rule (ASCII \texttt{-\{3,\}}) does
+not match; we report the miss rather than patch it after the test run.
+
+\paragraph{The utility cost is real and specific.}
+Benign retention on held-out templates fell to 0.763, and the loss is
+concentrated: the \texttt{kubectl} secret name \texttt{payments-db} (50 of 50
+occurrences) and the SSH target \texttt{10.0.4.12} (45 of 45) were removed,
+the first by the v0.3 credential family (\texttt{secret payments-db} reads as a
+keyword--value pair) and the second by the v0.3 e-mail family, which matches
+\texttt{deploy@10.0.4.12} as an address. Presidio also removes the IP address. A support engineer debugging that screen would
+lose the object they are asking about. Presidio's lower average retention
+(0.822) comes from removing file names and order numbers it tags as entities.
+
+\paragraph{What this evaluation does and does not show.}
+It replaces the census's string-only input with the pixel-to-OCR path a
+deployed assistant would use, adds provider-format secrets and a secret
+scanner baseline, and holds out whole screen types. It is still
+self-authored: the templates, the new families, and the oracle share
+authors, the screens are synthetic HTML rather than captures from real
+sessions, OCR is one engine rather than a vision-language model, and the 592
+OCR-destroyed payloads mean any claim applies to what survives OCR, not to
+what is on screen. It is a stronger test of the redaction surface, not a
+field study.
+
 \subsection{Threats to validity}\label{sec:threats}
 
 \begin{itemize}
@@ -1171,12 +1317,15 @@ that would dominate the mediation overhead.
         adversary would likely lower recall further and is the appropriate next
         stress test~\cite{jia2025critical}.
   \item \textbf{Synthetic-only, English-only.} All payloads and carriers are
-        invented and English; real captures and multi-lingual evasion are not
-        studied.
+        invented and English. The rendered-screen evaluation
+        (Section~\ref{sec:screen}) adds real rendering and OCR but not real
+        user sessions; multi-lingual evasion is not studied.
 \end{itemize}
 
 \paragraph{Future work.}
-In priority order: (1) a larger multi-model replication that retains per-case
+In priority order: (0) the rendered-screen protocol run on consented real
+screen-share recordings and through a vision-language front end rather than
+OCR; (1) a larger multi-model replication that retains per-case
 outputs and uses an independent A1 judge; (2) a fully independent or third-party
 held-out corpus to close the residual generative circularity; (3) decoder coverage for the
 out-of-coverage families (Base64\,/\,hex\,/\,ROT13\,/\,bidi) the current census
@@ -1211,7 +1360,8 @@ deployments (browser extension + assistant API) would require redaction at the
 extension boundary and trust-model adjustments.
 
 \paragraph{What we did not measure.}
-Real-user task-completion rates, latency on production captures, cross-turn
+Real-user task-completion rates, redaction on real (non-synthetic) screen
+recordings, latency on production captures, cross-turn
 retention leakage, multilingual performance, adaptive attackers, or broad
 model-family repeatability.
 
@@ -1220,7 +1370,12 @@ model-family repeatability.
 %%%──────────────────────────────────────────────────────────────────────
 
 \begin{itemize}
-  \item Synthetic benchmark only; no real-user evaluation.
+  \item Synthetic content only; no real-user evaluation. The rendered-screen
+        study uses real rendering and OCR on synthetic screens, one OCR engine,
+        and no vision-language front end.
+  \item On held-out screen types the v0.4 engine removed task-relevant
+        identifiers (a Kubernetes secret name, an SSH host) in every
+        occurrence; benign retention there was 0.763.
   \item The designer-authored ablation contains eleven fixtures; the self-generated
         census contains eleven evasion families. Neither is a sample of real
         screen-share traffic, and A2/A3 plus cross-turn A4 behaviour remain
@@ -1310,6 +1465,11 @@ characterised coverage boundary). We make bounded claims tied to a deterministic
 synthetic census and explicitly exclude real-world generalisation,
 model-behavioural defence, formal privacy, host compromise, and supply-chain
 threats from our scope.
+Moving from strings to rendered screens, the extended engine neutralised 0.918
+of OCR-surviving secrets and PII on a frozen test split and 0.974 on screen
+types it was never tuned on, well ahead of Presidio and gitleaks, while
+removing some identifiers a support engineer would need. That trade-off, not
+the headline rate, is what a deployment would have to tune.
 
 %%%──────────────────────────────────────────────────────────────────────
 \section*{Abbreviations}
@@ -1335,17 +1495,22 @@ threats from our scope.
 %%%──────────────────────────────────────────────────────────────────────
 
 \paragraph{Availability of data and materials.}
+\ifblind
 The blinded source code, synthetic fixtures, evaluator annotations,
 machine-readable result CSVs, protocol, figure generators, tests, dependency
 pins, and artifact checklist are provided in Additional file~1. We deliberately
 do not link a public repository during double-anonymous review; an archival
-record will be supplied after acceptance. No real screen captures, personal or
-customer data, production telemetry, or human-subject data were used. Project
-name: PerceptFence. Operating system: platform independent. Programming
-language: Python 3.10 or newer. The core runtime is standard-library only;
-pytest and the pinned evaluation dependencies are needed for full reproduction.
-License: all rights reserved; review, citation, and reproducibility inspection
-are permitted under the bundled \texttt{LICENSE}.
+record will be supplied after acceptance.
+\else
+\publicartifactavailability
+\fi
+No real screen captures, personal or customer data, production telemetry, or
+human-subject data were used. Project name: PerceptFence. Operating system:
+platform independent. Programming language: Python 3.10 or newer. The core
+runtime is standard-library only; pytest and the pinned evaluation dependencies
+are needed for full reproduction. License: all rights reserved; review,
+citation, and reproducibility inspection are permitted under the bundled
+\texttt{LICENSE}.
 
 \paragraph{Competing interests.}
 The authors have no relevant financial or non-financial interests to disclose.
@@ -1378,7 +1543,9 @@ Not applicable. The manuscript contains no identifiable human-subject data.
 \paragraph{Generative AI / tool-use disclosure.}
 OpenAI Codex-based coding agents accessed through Hermes Agent were used for
 editorial alternatives, code review, figure-script drafting, and
-submission-package checks. They were not credited as authors. The authors
+submission-package checks; for v0.4, an Anthropic Claude agent in Hermes
+Agent drafted the rendered-screen harness, families, tests, and
+Section~\ref{sec:screen}. Neither is credited as an author. The authors
 selected and edited the prose, inspected the implementation and generated
 figures, executed every reported deterministic evaluation and test, and remain
 responsible for the manuscript, code, claims, and final submission decisions.
@@ -1388,9 +1555,8 @@ responsible for the manuscript, code, claims, and final submission decisions.
 %%%──────────────────────────────────────────────────────────────────────
 
 \paragraph{Additional file 1.}
-File name: \texttt{perceptfence\_additional\_file\_1\_2026-07-09.zip}. File
-format: \texttt{.zip}. Title: \textit{PerceptFence reproducibility artifact}.
-Description: blinded source code, synthetic fixture definitions, evaluator
+File format: \texttt{.zip}. Title: \textit{PerceptFence reproducibility
+artifact}. Description: source code, synthetic fixture definitions, evaluator
 annotations, evaluation protocol, machine-readable result CSVs, figure
 generators, tests, dependency pins, checksums, and the artifact checklist for
 the deterministic results reported here.

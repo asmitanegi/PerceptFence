@@ -107,6 +107,41 @@ class RedactionEngine:
     )
     _CARD_CANDIDATE_RE = re.compile(rf"(?<!\d)(?:\d[ \t\-{_ZERO_WIDTH_CHARS}]*){{13,19}}(?!\d)")
 
+    # ---- v0.4 rendered-screen families (tuned on the dev split of eval/screen only) ----
+    # T7 assignment context: NAME=value / NAME: value where NAME is secret-shaped. The
+    # value is redacted to end of line so OCR-inserted spaces cannot split it out, and
+    # the variable name stays visible because it is task-relevant.
+    _ASSIGN_SECRET_RE = re.compile(
+        r"(?im)^([^\S\n]*[^\w\s\[]{0,3}[^\S\n]*(?:\d+[.)]?\s+)?(?:export\s+)?"
+        r"[A-Za-z0-9_.-]*(?:SECRET|TOKEN|PASSWORD|PASSWD|PWD|API[_-]?KEY|ACCESS[_-]?KEY|PRIVATE[_-]?KEY|CREDENTIALS?|AUTH)[A-Za-z0-9_.-]*"
+        r"[^\S\n]*[=:][^\S\n]*)(\S[^\n]*)$"
+    )
+    # T8 provider formats (public token grammars: AWS, GitHub, Stripe, Slack, OpenAI, JWT,
+    # PEM). OCR may break a token with single spaces; continuation chunks are consumed
+    # only while they look like token material (mixed classes or digits, >= 4 chars).
+    _PROVIDER_PREFIX_RE = re.compile(
+        r"(?<![A-Za-z0-9])(?:A[KS]IA[A-Z0-9]{8,}|gh[pousr]_[A-Za-z0-9]{6,}|github_pat_[A-Za-z0-9_]{6,}|"
+        r"[sr]k_(?:live|test)_[A-Za-z0-9]{6,}|sk-(?:proj-)?[A-Za-z0-9_-]{10,}|xox[abprs]-[A-Za-z0-9-]{6,}|"
+        r"eyJ[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_.-]*)"
+    )
+    _TOKEN_CONTINUATION_RE = re.compile(r"[^\S\n]{1,2}(?=[A-Za-z0-9_+/=.-]*[0-9])(?=[A-Za-z0-9_+/=.-]*[A-Za-z])[A-Za-z0-9_+/=.-]{4,}")
+    _PEM_BLOCK_RE = re.compile(r"-{3,}\s*BEGIN[A-Z ]*PRIVATE KEY\s*-{3,}.*?(?:-{3,}\s*END[A-Z ]*PRIVATE KEY\s*-{3,}|\Z)", re.S)
+    # T9 URL userinfo: scheme://user:password@host, tolerant of OCR spaces around : / @
+    _URL_USERINFO_RE = re.compile(r"(?i)(\b[a-z][a-z0-9+.-]{1,15}:[^\S\n]?//[^\S\n]?[^\s:/@]+[^\S\n]?:[^\S\n]?)([^\s@]+(?:[^\S\n][^\s@]+)?)([^\S\n]?@)")
+    # T10 PII on rendered forms: NANP phones, OCR-spaced e-mail, 4x4 card groups that OCR
+    # may have made Luhn-invalid, and label-anchored values (label kept, value dropped).
+    _PHONE_RE = re.compile(r"(?<!\d)(?:\+?1[ .-]?)?\(?\d{3}\)?[ .-]?\d{3}[ .-]\d{4}(?!\d)")
+    _OCR_EMAIL_RE = re.compile(r"[\w.+-]+(?:[^\S\n][\w.+-]+)?[^\S\n]?@[^\S\n]?[\w-]+(?:\.[\w-]+)+")
+    _CARD_GROUPS_RE = re.compile(r"(?<!\d)\d{4}[ -]\d{4}[ -]\d{4}[ -]\d{1,4}(?!\d)")
+    _PII_LABEL_RE = re.compile(
+        r"(?im)^([^\S\n]*[^\w\s\[]{0,3}[^\S\n]*(?:SSN|Social Security(?: No\.?| Number)?|Card(?: on file| number)?|Phone|Mobile|"
+        r"DOB|Date of birth|Customer|Full name|Name|Contact)\b[^\S\n]*:?[^\S\n]+)(?!\[)(\S[^\n]*)$"
+    )
+
+    def __init__(self, screen_families: bool = True) -> None:
+        # screen_families=False reproduces the v0.3 engine exactly (six families).
+        self.screen_families = screen_families
+
     def mediate(self, session: CapturedSession, decision: PolicyDecision) -> MediatedSession:
         action = decision.action
         context = self._sanitize_untrusted_text(session.raw_context)
@@ -160,13 +195,50 @@ class RedactionEngine:
         return tuple(sorted(categories))
 
     def _sanitize_untrusted_text(self, text: str) -> str:
+        if self.screen_families:
+            text = self._redact_rendered_screen(text)
         # Homoglyph credentials are line-redacted before ASCII regexes can
         # partially mask only the prefix and leave the confusable suffix behind.
         text = self._redact_homoglyph_credentials(text)
         text = self._redact_split_digit_pii(text)
         text = self._redact_credentials(text)
         text = self._summarize_identifiers(text)
+        if self.screen_families:
+            # label-anchored PII runs last so the six v0.3 families keep their placeholders
+            text = self._PII_LABEL_RE.sub(r"\1[REDACTED]", text)
         return self._redact_prompt_injections(text)
+
+    def _redact_rendered_screen(self, text: str) -> str:
+        """T7-T10: families for OCR text from real rendered screens (v0.4)."""
+        text = self._PEM_BLOCK_RE.sub("[REDACTED PRIVATE KEY]", text)
+        text = self._URL_USERINFO_RE.sub(r"\1[REDACTED]\3", text)
+        text = self._redact_provider_tokens(text)
+        text = self._ASSIGN_SECRET_RE.sub(r"\1[REDACTED]", text)
+        text = self._OCR_EMAIL_RE.sub("[EMAIL]", text)
+        text = self._redact_card_groups(text)
+        return self._PHONE_RE.sub("[PHONE]", text)
+
+    def _redact_card_groups(self, text: str) -> str:
+        # Luhn-valid groups are left for the v0.3 split-digit family ([CARD] either way);
+        # this catches 4x4 groups OCR corrupted into Luhn-invalid digit strings.
+        return self._CARD_GROUPS_RE.sub("[CARD]", text)
+
+    def _redact_provider_tokens(self, text: str) -> str:
+        out, pos = [], 0
+        for m in self._PROVIDER_PREFIX_RE.finditer(text):
+            if m.start() < pos:
+                continue
+            end = m.end()
+            while True:  # absorb OCR-split continuation chunks of the same token
+                c = self._TOKEN_CONTINUATION_RE.match(text, end)
+                if not c:
+                    break
+                end = c.end()
+            out.append(text[pos:m.start()])
+            out.append("[REDACTED]")
+            pos = end
+        out.append(text[pos:])
+        return "".join(out)
 
     def _redact_credentials(self, text: str) -> str:
         text = self._CREDENTIAL_RE.sub(r"\1[REDACTED]", text)

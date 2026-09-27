@@ -45,6 +45,7 @@ LATENCY_COPIES = [
 # Files whose bytes define the evidence-bearing submission; checksummed together.
 PACK = [
     TEX,
+    ROOT / "paper" / "authors_identity.tex",
     ROOT / "paper" / "references.bib",
     ROOT / "paper" / "figures" / "heldout_coverage.pdf",
     ROOT / "paper" / "figures" / "architecture_walkthrough.pdf",

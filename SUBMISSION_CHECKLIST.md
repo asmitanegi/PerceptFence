@@ -1,11 +1,13 @@
 # SUBMISSION_CHECKLIST.md — PerceptFence → submission-staged
 
-Single, canonical, evidence-backed readiness gate for the Springer Nature *Cybersecurity*
-(double-anonymous) submission. Every line carries a **status** and the **command that proves it**.
+> **Status (2026-09-27):** the v0.3 manuscript was submitted to the *International Journal of Information Security* on 2026-09-07 and declined on 2026-09-09 ("results too premature"). v0.4.0 adds the rendered-screen evaluation in response and is posted as a preprint. IJIS-specific instructions below are kept as a record of that submission.
+
+Single, canonical, evidence-backed readiness gate for the Springer Nature *International Journal of Information Security*
+(single-blind) submission. Every line carries a **status** and the **command that proves it**.
 Re-run the commands on a fresh clone; do not trust this file's PASS marks without reproducing them.
 
-**Authoritative one-shot gate:** `python3 tools/verify_submission.py` (exit 0 = all 9 checks PASS).
-**Last verified:** flat-tree layout, 42/42 tests, gate 9/9.
+**Authoritative gates:** `python3 tools/verify_submission.py` and `python3 -m pytest tools/test_build_submission_package.py -q`.
+**Last verified:** flat-tree layout, 42/42 scientific tests, 3/3 packaging regressions, gate 9/9.
 
 ---
 
@@ -13,13 +15,13 @@ Re-run the commands on a fresh clone; do not trust this file's PASS marks withou
 
 | Item | Status | Proof command / evidence |
 |---|---|---|
-| Double-anonymous build active (`\blindtrue`) | PASS | `grep -n '^\\blindtrue' paper/main.tex` |
-| No author identity on rendered lines | PASS | `python3 tools/verify_submission.py` → `blind-leak` PASS (identity only in comments / `\else` branch) |
+| Single-blind IJIS build available | PASS | `tools/build_submission_package.py --review-model single-anonymous --target international-journal-information-security --journal-name "International Journal of Information Security" --date 2026-09-07` exits 0 |
+| Author identity and employer boundary | PASS | packaging regression proves both authors + Independent Researcher + public DOI, with zero Parafin references; legacy blinded build remains identity-free |
 | Required sections present (9) | PASS | Introduction, Threat Model, Related Work, Design, Evaluation, Discussion, Limitations, Ethics, Conclusion — `grep -c '\\section{' paper/main.tex` |
-| Abstract present | PASS | `\abstract{...}`, 239 words — within Springer's 250-word limit |
+| Abstract present | PASS | `\abstract{...}`, 219 words — within Springer's 250-word limit |
 | Keywords present | PASS | `grep -n '\\keywords' paper/main.tex` |
 | Compiles under Springer `sn-jnl` class | PASS | `tectonic -X compile paper/main.tex --outdir /tmp/perceptfence-build --keep-logs --keep-intermediates` exits 0; class and bibliography style are vendored |
-| Review formatting present | PASS | double spacing via `setspace`; continuous line numbers via `lineno`; A4 page size verified with `pdfinfo` |
+| Review formatting present | PASS | double spacing via `setspace`; continuous line numbers via `lineno`; 43-page A4 PDF verified with `pdfinfo` |
 
 ## 2. Source (`screenshare_mediator/`)
 
@@ -92,12 +94,12 @@ Re-run the commands on a fresh clone; do not trust this file's PASS marks withou
 
 These are **out of scope for this repo** and require a human:
 
-- [ ] Identity-consent confirmation for the de-anonymized public artifact route
+- [ ] Asmita approval of the exact IJIS manuscript, author metadata, declarations, preprint disclosure, and cover letter
 - [ ] Copyright / license decision (currently all-rights-reserved; resolve for public release)
 - [ ] APC / fee confirmation with the venue
 - [ ] Reconfirm title-page identity, author order, corresponding author, and declarations before upload
 - [ ] Ensure the cover letter uses the final title and bounded evidence claims
-- [ ] Final portal upload and the submit click (Springer Editorial Manager)
+- [ ] Final Snapp upload, system-PDF inspection, and Neeraj's submit click
 
 ---
 
@@ -105,6 +107,6 @@ These are **out of scope for this repo** and require a human:
 
 The artifact and manuscript are internally self-consistent, reproducible from a
 fresh extraction, and pass all 9 automated gates once checksums are frozen. The
-Springer source build is locally verified. Remaining work is author/portal control,
+IJIS single-blind and legacy blinded source builds are locally verified. Remaining work is author/portal control,
 not an untested manuscript build. Acceptance probability is still governed by the
 science—novelty, synthetic-only evidence, and limited model coverage—not packaging.

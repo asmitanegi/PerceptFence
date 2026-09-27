@@ -1,0 +1,6 @@
+{
+  "chrome": "Google Chrome 154.0.8037.58",
+  "tesseract": "tesseract 5.5.3",
+  "n_cases": 480,
+  "render_dir": "/Users/neeraj/.hermes/cache/scratch/pf/render-test"
+}

@@ -1,0 +1,889 @@
+{
+  "by_defense": {
+    "gitleaks": {
+      "eligible": 242,
+      "neutralised": 68,
+      "rate": 0.281,
+      "wilson95": [
+        0.2281,
+        0.3407
+      ],
+      "benign_retention": 1.0
+    },
+    "naive": {
+      "eligible": 242,
+      "neutralised": 60,
+      "rate": 0.2479,
+      "wilson95": [
+        0.1978,
+        0.306
+      ],
+      "benign_retention": 1.0
+    },
+    "none": {
+      "eligible": 242,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.0156
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence": {
+      "eligible": 242,
+      "neutralised": 218,
+      "rate": 0.9008,
+      "wilson95": [
+        0.8567,
+        0.9324
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence_v03": {
+      "eligible": 242,
+      "neutralised": 127,
+      "rate": 0.5248,
+      "wilson95": [
+        0.462,
+        0.5868
+      ],
+      "benign_retention": 1.0
+    }
+  },
+  "by_defense_kind": {
+    "gitleaks|aws_access_key_id": {
+      "eligible": 23,
+      "neutralised": 22,
+      "rate": 0.9565,
+      "wilson95": [
+        0.7901,
+        0.9923
+      ],
+      "benign_retention": 1.0
+    },
+    "gitleaks|aws_secret": {
+      "eligible": 10,
+      "neutralised": 8,
+      "rate": 0.8,
+      "wilson95": [
+        0.4902,
+        0.9433
+      ],
+      "benign_retention": 1.0
+    },
+    "gitleaks|card": {
+      "eligible": 23,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.1431
+      ],
+      "benign_retention": 1.0
+    },
+    "gitleaks|email": {
+      "eligible": 24,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.138
+      ],
+      "benign_retention": 1.0
+    },
+    "gitleaks|github_pat": {
+      "eligible": 20,
+      "neutralised": 17,
+      "rate": 0.85,
+      "wilson95": [
+        0.6396,
+        0.9476
+      ],
+      "benign_retention": 1.0
+    },
+    "gitleaks|jwt": {
+      "eligible": 0,
+      "neutralised": 0,
+      "rate": null,
+      "wilson95": [
+        NaN,
+        NaN
+      ],
+      "benign_retention": 1.0
+    },
+    "gitleaks|openai_key": {
+      "eligible": 2,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.6576
+      ],
+      "benign_retention": 1.0
+    },
+    "gitleaks|person_name": {
+      "eligible": 48,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.0741
+      ],
+      "benign_retention": 1.0
+    },
+    "gitleaks|phone": {
+      "eligible": 24,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.138
+      ],
+      "benign_retention": 1.0
+    },
+    "gitleaks|slack_token": {
+      "eligible": 13,
+      "neutralised": 13,
+      "rate": 1.0,
+      "wilson95": [
+        0.7719,
+        1.0
+      ],
+      "benign_retention": 1.0
+    },
+    "gitleaks|ssn": {
+      "eligible": 21,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.1546
+      ],
+      "benign_retention": 1.0
+    },
+    "gitleaks|stripe_key": {
+      "eligible": 13,
+      "neutralised": 8,
+      "rate": 0.6154,
+      "wilson95": [
+        0.3552,
+        0.8229
+      ],
+      "benign_retention": 1.0
+    },
+    "gitleaks|url_password": {
+      "eligible": 21,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.1546
+      ],
+      "benign_retention": 1.0
+    },
+    "naive|aws_access_key_id": {
+      "eligible": 23,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.1431
+      ],
+      "benign_retention": 1.0
+    },
+    "naive|aws_secret": {
+      "eligible": 10,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.2775
+      ],
+      "benign_retention": 1.0
+    },
+    "naive|card": {
+      "eligible": 23,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.1431
+      ],
+      "benign_retention": 1.0
+    },
+    "naive|email": {
+      "eligible": 24,
+      "neutralised": 19,
+      "rate": 0.7917,
+      "wilson95": [
+        0.5953,
+        0.9076
+      ],
+      "benign_retention": 1.0
+    },
+    "naive|github_pat": {
+      "eligible": 20,
+      "neutralised": 8,
+      "rate": 0.4,
+      "wilson95": [
+        0.2188,
+        0.6134
+      ],
+      "benign_retention": 1.0
+    },
+    "naive|jwt": {
+      "eligible": 0,
+      "neutralised": 0,
+      "rate": null,
+      "wilson95": [
+        NaN,
+        NaN
+      ],
+      "benign_retention": 1.0
+    },
+    "naive|openai_key": {
+      "eligible": 2,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.6576
+      ],
+      "benign_retention": 1.0
+    },
+    "naive|person_name": {
+      "eligible": 48,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.0741
+      ],
+      "benign_retention": 1.0
+    },
+    "naive|phone": {
+      "eligible": 24,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.138
+      ],
+      "benign_retention": 1.0
+    },
+    "naive|slack_token": {
+      "eligible": 13,
+      "neutralised": 13,
+      "rate": 1.0,
+      "wilson95": [
+        0.7719,
+        1.0
+      ],
+      "benign_retention": 1.0
+    },
+    "naive|ssn": {
+      "eligible": 21,
+      "neutralised": 20,
+      "rate": 0.9524,
+      "wilson95": [
+        0.7733,
+        0.9915
+      ],
+      "benign_retention": 1.0
+    },
+    "naive|stripe_key": {
+      "eligible": 13,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.2281
+      ],
+      "benign_retention": 1.0
+    },
+    "naive|url_password": {
+      "eligible": 21,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.1546
+      ],
+      "benign_retention": 1.0
+    },
+    "none|aws_access_key_id": {
+      "eligible": 23,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.1431
+      ],
+      "benign_retention": 1.0
+    },
+    "none|aws_secret": {
+      "eligible": 10,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.2775
+      ],
+      "benign_retention": 1.0
+    },
+    "none|card": {
+      "eligible": 23,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.1431
+      ],
+      "benign_retention": 1.0
+    },
+    "none|email": {
+      "eligible": 24,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.138
+      ],
+      "benign_retention": 1.0
+    },
+    "none|github_pat": {
+      "eligible": 20,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.1611
+      ],
+      "benign_retention": 1.0
+    },
+    "none|jwt": {
+      "eligible": 0,
+      "neutralised": 0,
+      "rate": null,
+      "wilson95": [
+        NaN,
+        NaN
+      ],
+      "benign_retention": 1.0
+    },
+    "none|openai_key": {
+      "eligible": 2,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.6576
+      ],
+      "benign_retention": 1.0
+    },
+    "none|person_name": {
+      "eligible": 48,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.0741
+      ],
+      "benign_retention": 1.0
+    },
+    "none|phone": {
+      "eligible": 24,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.138
+      ],
+      "benign_retention": 1.0
+    },
+    "none|slack_token": {
+      "eligible": 13,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.2281
+      ],
+      "benign_retention": 1.0
+    },
+    "none|ssn": {
+      "eligible": 21,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.1546
+      ],
+      "benign_retention": 1.0
+    },
+    "none|stripe_key": {
+      "eligible": 13,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.2281
+      ],
+      "benign_retention": 1.0
+    },
+    "none|url_password": {
+      "eligible": 21,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.1546
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence_v03|aws_access_key_id": {
+      "eligible": 23,
+      "neutralised": 23,
+      "rate": 1.0,
+      "wilson95": [
+        0.8569,
+        1.0
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence_v03|aws_secret": {
+      "eligible": 10,
+      "neutralised": 8,
+      "rate": 0.8,
+      "wilson95": [
+        0.4902,
+        0.9433
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence_v03|card": {
+      "eligible": 23,
+      "neutralised": 23,
+      "rate": 1.0,
+      "wilson95": [
+        0.8569,
+        1.0
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence_v03|email": {
+      "eligible": 24,
+      "neutralised": 19,
+      "rate": 0.7917,
+      "wilson95": [
+        0.5953,
+        0.9076
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence_v03|github_pat": {
+      "eligible": 20,
+      "neutralised": 11,
+      "rate": 0.55,
+      "wilson95": [
+        0.3421,
+        0.7418
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence_v03|jwt": {
+      "eligible": 0,
+      "neutralised": 0,
+      "rate": null,
+      "wilson95": [
+        NaN,
+        NaN
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence_v03|openai_key": {
+      "eligible": 2,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.6576
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence_v03|person_name": {
+      "eligible": 48,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.0741
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence_v03|phone": {
+      "eligible": 24,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.138
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence_v03|slack_token": {
+      "eligible": 13,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.2281
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence_v03|ssn": {
+      "eligible": 21,
+      "neutralised": 20,
+      "rate": 0.9524,
+      "wilson95": [
+        0.7733,
+        0.9915
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence_v03|stripe_key": {
+      "eligible": 13,
+      "neutralised": 4,
+      "rate": 0.3077,
+      "wilson95": [
+        0.1268,
+        0.5763
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence_v03|url_password": {
+      "eligible": 21,
+      "neutralised": 19,
+      "rate": 0.9048,
+      "wilson95": [
+        0.7109,
+        0.9735
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence|aws_access_key_id": {
+      "eligible": 23,
+      "neutralised": 23,
+      "rate": 1.0,
+      "wilson95": [
+        0.8569,
+        1.0
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence|aws_secret": {
+      "eligible": 10,
+      "neutralised": 10,
+      "rate": 1.0,
+      "wilson95": [
+        0.7225,
+        1.0
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence|card": {
+      "eligible": 23,
+      "neutralised": 23,
+      "rate": 1.0,
+      "wilson95": [
+        0.8569,
+        1.0
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence|email": {
+      "eligible": 24,
+      "neutralised": 24,
+      "rate": 1.0,
+      "wilson95": [
+        0.862,
+        1.0
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence|github_pat": {
+      "eligible": 20,
+      "neutralised": 20,
+      "rate": 1.0,
+      "wilson95": [
+        0.8389,
+        1.0
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence|jwt": {
+      "eligible": 0,
+      "neutralised": 0,
+      "rate": null,
+      "wilson95": [
+        NaN,
+        NaN
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence|openai_key": {
+      "eligible": 2,
+      "neutralised": 2,
+      "rate": 1.0,
+      "wilson95": [
+        0.3424,
+        1.0
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence|person_name": {
+      "eligible": 48,
+      "neutralised": 24,
+      "rate": 0.5,
+      "wilson95": [
+        0.3639,
+        0.6361
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence|phone": {
+      "eligible": 24,
+      "neutralised": 24,
+      "rate": 1.0,
+      "wilson95": [
+        0.862,
+        1.0
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence|slack_token": {
+      "eligible": 13,
+      "neutralised": 13,
+      "rate": 1.0,
+      "wilson95": [
+        0.7719,
+        1.0
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence|ssn": {
+      "eligible": 21,
+      "neutralised": 21,
+      "rate": 1.0,
+      "wilson95": [
+        0.8454,
+        1.0
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence|stripe_key": {
+      "eligible": 13,
+      "neutralised": 13,
+      "rate": 1.0,
+      "wilson95": [
+        0.7719,
+        1.0
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence|url_password": {
+      "eligible": 21,
+      "neutralised": 21,
+      "rate": 1.0,
+      "wilson95": [
+        0.8454,
+        1.0
+      ],
+      "benign_retention": 1.0
+    }
+  },
+  "by_defense_quality": {
+    "gitleaks|compressed": {
+      "eligible": 110,
+      "neutralised": 29,
+      "rate": 0.2636,
+      "wilson95": [
+        0.1903,
+        0.3529
+      ],
+      "benign_retention": 1.0
+    },
+    "gitleaks|lossless": {
+      "eligible": 132,
+      "neutralised": 39,
+      "rate": 0.2955,
+      "wilson95": [
+        0.2243,
+        0.3782
+      ],
+      "benign_retention": 1.0
+    },
+    "naive|compressed": {
+      "eligible": 110,
+      "neutralised": 27,
+      "rate": 0.2455,
+      "wilson95": [
+        0.1745,
+        0.3336
+      ],
+      "benign_retention": 1.0
+    },
+    "naive|lossless": {
+      "eligible": 132,
+      "neutralised": 33,
+      "rate": 0.25,
+      "wilson95": [
+        0.1839,
+        0.3302
+      ],
+      "benign_retention": 1.0
+    },
+    "none|compressed": {
+      "eligible": 110,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.0337
+      ],
+      "benign_retention": 1.0
+    },
+    "none|lossless": {
+      "eligible": 132,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.0283
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence_v03|compressed": {
+      "eligible": 110,
+      "neutralised": 62,
+      "rate": 0.5636,
+      "wilson95": [
+        0.4704,
+        0.6526
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence_v03|lossless": {
+      "eligible": 132,
+      "neutralised": 65,
+      "rate": 0.4924,
+      "wilson95": [
+        0.4086,
+        0.5767
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence|compressed": {
+      "eligible": 110,
+      "neutralised": 98,
+      "rate": 0.8909,
+      "wilson95": [
+        0.8189,
+        0.9365
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence|lossless": {
+      "eligible": 132,
+      "neutralised": 120,
+      "rate": 0.9091,
+      "wilson95": [
+        0.8478,
+        0.9472
+      ],
+      "benign_retention": 1.0
+    }
+  },
+  "by_defense_split": {
+    "gitleaks|dev": {
+      "eligible": 242,
+      "neutralised": 68,
+      "rate": 0.281,
+      "wilson95": [
+        0.2281,
+        0.3407
+      ],
+      "benign_retention": 1.0
+    },
+    "naive|dev": {
+      "eligible": 242,
+      "neutralised": 60,
+      "rate": 0.2479,
+      "wilson95": [
+        0.1978,
+        0.306
+      ],
+      "benign_retention": 1.0
+    },
+    "none|dev": {
+      "eligible": 242,
+      "neutralised": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.0156
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence_v03|dev": {
+      "eligible": 242,
+      "neutralised": 127,
+      "rate": 0.5248,
+      "wilson95": [
+        0.462,
+        0.5868
+      ],
+      "benign_retention": 1.0
+    },
+    "perceptfence|dev": {
+      "eligible": 242,
+      "neutralised": 218,
+      "rate": 0.9008,
+      "wilson95": [
+        0.8567,
+        0.9324
+      ],
+      "benign_retention": 1.0
+    }
+  },
+  "ocr": {
+    "payloads": 360,
+    "eligible": 242,
+    "ocr_lost": 118
+  },
+  "defenses": [
+    "none",
+    "naive",
+    "perceptfence_v03",
+    "perceptfence",
+    "gitleaks"
+  ],
+  "paired_diff_bootstrap95": {
+    "perceptfence-naive": [
+      0.6529,
+      0.4773,
+      0.7854
+    ],
+    "perceptfence-perceptfence_v03": [
+      0.376,
+      0.213,
+      0.4599
+    ],
+    "perceptfence-gitleaks": [
+      0.6198,
+      0.2,
+      0.8536
+    ]
+  }
+}

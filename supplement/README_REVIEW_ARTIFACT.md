@@ -1,7 +1,8 @@
-# PerceptFence blinded review artifact
+# PerceptFence review artifact
 
 This Additional file supports the deterministic claims in the accompanying
-blinded manuscript. It is not a live screen-share assistant integration.
+manuscript. It is not a live screen-share assistant integration. The package
+builder supplies citation and licence metadata for the selected review model.
 
 ## Evidence boundary
 
