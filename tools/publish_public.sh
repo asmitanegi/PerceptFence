@@ -50,7 +50,10 @@ fi
 
 # A normal clone has a .git directory; a linked worktree has a .git file.
 # Preserve either shape or rsync --delete will detach the destination worktree.
-RSYNC_OPTS=(-a --delete --exclude=.git)
+# --checksum: git archive stamps every file with the commit time, so a same-size
+# edit (e.g. version "0.3.0" -> "0.4.0") can pass rsync's size+mtime quick check
+# and silently never reach the public repo.
+RSYNC_OPTS=(-a --checksum --delete --exclude=.git)
 if [[ "$DRY" == "--dry-run" ]]; then
   RSYNC_OPTS+=(--dry-run -v)
   echo "=== DRY RUN — nothing copied. Below is what WOULD be published to $DEST ==="
