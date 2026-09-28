@@ -11,16 +11,19 @@ authors:
     given-names: "Neeraj Kumar Singh"
     email: "b.neerajkumarsingh@gmail.com"
     orcid: "https://orcid.org/0009-0002-2125-1805"
-version: "0.3.0"
-date-released: "2026-07-10"
+version: "0.4.0"
+date-released: "2026-09-27"
 identifiers:
   - type: doi
     value: "10.5281/zenodo.21150725"
     description: "Concept DOI for all PerceptFence research-artifact versions"
   - type: doi
+    value: "10.5281/zenodo.23004093"
+    description: "Version 0.4.0 research artifact (rendered-screen evaluation) and manuscript"
+  - type: doi
     value: "10.5281/zenodo.21289219"
     description: "Version 0.3.0 research artifact and revised manuscript"
-repository-artifact: "https://zenodo.org/records/21289219"
+repository-artifact: "https://zenodo.org/records/23004093"
 license: "LicenseRef-All-Rights-Reserved"
 keywords:
   - screen-share assistants

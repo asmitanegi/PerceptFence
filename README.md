@@ -245,15 +245,16 @@ The canonical threat model is the eight-adversary table in the manuscript (Threa
   title  = {PerceptFence: Content-Mediation Architecture and Deterministic Coverage for Screen-Share AI Assistants},
   year   = {2026},
   version = {0.4.0},
-  doi    = {10.5281/zenodo.21289219},
-  url    = {https://doi.org/10.5281/zenodo.21289219},
+  doi    = {10.5281/zenodo.23004093},
+  url    = {https://doi.org/10.5281/zenodo.23004093},
   note   = {Research artifact and manuscript, v0.4.0 adds the rendered-screen evaluation. Concept DOI: 10.5281/zenodo.21150725.}
 }
 ```
 
 Structured citation metadata lives at `CITATION.cff`. Use concept DOI
-`10.5281/zenodo.21150725` when citing the evolving artifact and version DOI
-`10.5281/zenodo.21289219` when citing this exact v0.3.0 snapshot.
+`10.5281/zenodo.21150725` when citing the evolving artifact, version DOI
+`10.5281/zenodo.23004093` for this v0.4.0 release, and
+`10.5281/zenodo.21289219` for the earlier v0.3.0 snapshot.
 
 ## License
 

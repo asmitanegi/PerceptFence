@@ -1,6 +1,6 @@
 [project]
 name = "perceptfence"
-version = "0.3.0"
+version = "0.4.0"
 description = "PerceptFence runtime mediation for screen-share AI assistants — synthetic-only research artifact."
 requires-python = ">=3.10"
 dependencies = []
