@@ -606,6 +606,13 @@ It accepts an empty list and a valid truncated prefix; therefore it is not a
 durable append-only, completeness, crash-evidence, or tail-truncation control
 (defence \textbf{not} claimed against A6).
 
+Durable tamper-evidence is the subject of separate work: RuntimeGuard-AI
+layers batch cryptographic attestation over a runtime decision log to produce
+audit evidence for high-risk systems under the EU AI
+Act~\cite{beshane2026runtimeguard}. Composing such an attestation layer beneath
+the decision records described here would address the A6 exclusion; we do not
+attempt it in this artifact.
+
 \subsection{Implementation}\label{sec:impl}
 
 The reference implementation is a standard-library-only Python package
